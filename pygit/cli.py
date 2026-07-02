@@ -19,6 +19,7 @@ from .refs import create_branch, current_branch_name, current_commit, delete_bra
 from .remote import clone, fetch, push
 from .reset import index_entries_from_tree, reset
 from .repository import find_repository, init_repository
+from .server import serve
 from .status import collect_status, format_status
 from .stash import stash_apply, stash_pop, stash_push
 from .tag import create_annotated_tag, create_lightweight_tag, list_tags
@@ -122,6 +123,11 @@ def build_parser() -> argparse.ArgumentParser:
     push_parser = subparsers.add_parser("push", help="推送到 origin")
     push_parser.add_argument("remote", nargs="?", help="可选远端仓库路径")
     push_parser.add_argument("branch", nargs="?", help="可选分支名")
+
+    serve_parser = subparsers.add_parser("serve", help="启动 pygit 专用 TCP 服务器")
+    serve_parser.add_argument("--host", default="127.0.0.1", help="监听地址")
+    serve_parser.add_argument("--port", type=int, default=9419, help="监听端口")
+    serve_parser.add_argument("path", nargs="?", default=".", help="要暴露的仓库路径")
 
     return parser
 
@@ -374,7 +380,7 @@ def cmd_merge(args: argparse.Namespace) -> int:
 def cmd_clone(args: argparse.Namespace) -> int:
     """执行 clone 命令。"""
 
-    clone(Path(args.remote), Path(args.target))
+    clone(args.remote, Path(args.target))
     return 0
 
 
@@ -382,7 +388,7 @@ def cmd_fetch(args: argparse.Namespace) -> int:
     """执行 fetch 命令。"""
 
     repo = find_repository(Path.cwd())
-    fetched = fetch(repo, Path(args.remote) if args.remote else None)
+    fetched = fetch(repo, args.remote if args.remote else None)
     for branch, oid in fetched.items():
         print(f"{oid} refs/remotes/origin/{branch}")
     return 0
@@ -392,8 +398,21 @@ def cmd_push(args: argparse.Namespace) -> int:
     """执行 push 命令。"""
 
     repo = find_repository(Path.cwd())
-    oid = push(repo, Path(args.remote) if args.remote else None, args.branch)
+    oid = push(repo, args.remote if args.remote else None, args.branch)
     print(oid)
+    return 0
+
+
+def cmd_serve(args: argparse.Namespace) -> int:
+    """执行 serve 命令。"""
+
+    server = serve(Path(args.path), args.host, args.port)
+    host, port = server.server_address
+    print(f"pygit server listening on pygit://{host}:{port}", flush=True)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        server.shutdown()
     return 0
 
 
@@ -447,6 +466,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_fetch(args)
         if args.command == "push":
             return cmd_push(args)
+        if args.command == "serve":
+            return cmd_serve(args)
     except PygitError as exc:
         print(f"fatal: {exc}", file=sys.stderr)
         return 1

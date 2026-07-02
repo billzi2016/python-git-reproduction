@@ -183,6 +183,12 @@
 - [x] `fetch`
 - [x] `push`
 - [x] 非快进 push 拒绝。
+- [x] 自建 pygit 专用服务器。
+- [x] `pygit://host:port` 专用远端 URL。
+- [x] pygit 专用服务器 clone。
+- [x] pygit 专用服务器 fetch。
+- [x] pygit 专用服务器 push。
+- [x] 明确不实现 GitHub/官方 Git wire protocol。
 - [x] 明确不实现 Git LFS。
 
 ## 13. 测试
@@ -201,3 +207,4 @@
 - [x] `tests/test_merge.py`
 - [x] `tests/test_pack.py`
 - [x] `tests/test_remote.py`
+- [x] `tests/test_server.py`

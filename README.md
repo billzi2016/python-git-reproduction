@@ -73,6 +73,7 @@
 - merge 支持 LCA、快进、非快进自动合并、冲突标记和 index stage 1/2/3。
 - pack v2 与 idx v2 基础读写、idx 随机寻址、ref-delta 解析和非 delta pack 生成。
 - 本地路径远端 `clone`、`fetch`、`push` 和非快进 push 拒绝。
+- 自建 `.pygit` 专用 TCP 服务器和 `pygit://host:port` 远端。
 - `info/exclude` 忽略规则。
 - 流式文件对象写入。
 - `checkout -- <path>`、`switch -c`、分支重命名、上游配置、config 作者信息。
@@ -80,7 +81,7 @@
 
 尚未实现：
 
-- HTTP/socket 远端协议。
+- GitHub、SSH Git、HTTP Git 和官方 Git wire protocol。
 - packfile、fetch、push、clone。
 
 ## 快速使用
@@ -392,14 +393,16 @@ Python 源码必须有充分中文注释：
 - `clone`：已实现本地路径远端。
 - `fetch`：已实现本地路径远端。
 - `push`：已实现本地路径远端。
-- 远端引用协商。
-- want/have 对象协商。
+- 自建 `.pygit` 专用服务器：已实现。
+- `pygit://host:port` 远端：已实现。
+- 远端引用协商：已实现 pygit 专用协议。
+- want/have 对象协商：不实现官方 Git 协议，pygit 专用协议使用对象负载同步。
 - 非快进拒绝：已实现。
-- pack 网络传输：未实现 HTTP/socket 协议。
+- pack 网络传输：不实现官方 Git wire protocol，pygit 专用协议走 JSON-lines 对象负载。
 
 ## 当前限制
 
-当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status`、`rm`、`branch`、`checkout`、`switch`、`tag`、`reset`、`stash`、`merge`、packfile 与本地路径远端同步能力。它还没有实现 HTTP/socket 远端协议。
+当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status`、`rm`、`branch`、`checkout`、`switch`、`tag`、`reset`、`stash`、`merge`、packfile、本地路径远端同步与自建 `.pygit` 专用服务器能力。它不实现 GitHub、SSH Git、HTTP Git 或官方 Git wire protocol。
 
 项目明确不实现 Git LFS。大文件后续只按普通 Git blob 和 packfile 路线优化，不引入 LFS pointer、LFS filter、LFS 对象目录或 LFS 远端协议。
 
