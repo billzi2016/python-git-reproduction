@@ -205,6 +205,28 @@ class CliTests(unittest.TestCase):
             self.assertEqual(pop_result.returncode, 0, pop_result.stderr.decode())
             self.assertEqual(file_path.read_bytes(), b"two\n")
 
+    def test_merge_fast_forward_cli(self) -> None:
+        """CLI 应能执行快进 merge。"""
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            file_path = root / "file.txt"
+            file_path.write_bytes(b"base\n")
+
+            self.assertEqual(self.run_cli(root, "init").returncode, 0)
+            self.assertEqual(self.run_cli(root, "add", "file.txt").returncode, 0)
+            self.assertEqual(self.run_cli(root, "commit", "-m", "base").returncode, 0)
+            self.assertEqual(self.run_cli(root, "branch", "feature").returncode, 0)
+            self.assertEqual(self.run_cli(root, "checkout", "feature").returncode, 0)
+            file_path.write_bytes(b"feature\n")
+            self.assertEqual(self.run_cli(root, "add", "file.txt").returncode, 0)
+            self.assertEqual(self.run_cli(root, "commit", "-m", "feature").returncode, 0)
+            self.assertEqual(self.run_cli(root, "checkout", "main").returncode, 0)
+
+            merge_result = self.run_cli(root, "merge", "feature")
+            self.assertEqual(merge_result.returncode, 0, merge_result.stderr.decode())
+            self.assertEqual(file_path.read_bytes(), b"feature\n")
+
 
 if __name__ == "__main__":
     unittest.main()

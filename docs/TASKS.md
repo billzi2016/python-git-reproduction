@@ -8,6 +8,7 @@
 - [x] 编写项目目录结构规划 `docs/PROJECT_TREE.md`。
 - [x] 编写 SDD 工程要求 `docs/SDD_REQUIREMENTS.md`。
 - [x] 明确必须使用标准库 `unittest`。
+- [x] 明确测试不得使用模拟对象替代核心 Git 行为。
 - [x] 明确危险指令必须保护用户电脑，禁止误删仓库外文件。
 - [x] 明确项目必须遵循 SOLID 和 DRY 原则。
 - [x] 在 PRD 中明确项目必须遵循 SOLID 和 DRY 原则。
@@ -162,13 +163,14 @@
 
 ## 11. 合并
 
-- [ ] commit DAG BFS 遍历。
-- [ ] 最近公共祖先 LCA。
-- [ ] fast-forward merge。
-- [ ] 三方合并。
-- [ ] 冲突文件标记。
-- [ ] index stage 1/2/3。
-- [ ] 未解决冲突禁止 commit。
+- [x] commit DAG BFS 遍历。
+- [x] 最近公共祖先 LCA。
+- [x] fast-forward merge。
+- [x] 三方合并。
+- [x] 非快进无冲突合并创建双父 merge commit。
+- [x] 冲突文件标记。
+- [x] index stage 1/2/3。
+- [x] 未解决冲突禁止 commit。
 
 ## 12. Packfile 与远端
 
@@ -196,6 +198,6 @@
 - [x] `tests/test_checkout.py`
 - [x] `tests/test_reset.py`
 - [x] `tests/test_tag.py`
-- [ ] `tests/test_merge.py`
+- [x] `tests/test_merge.py`
 - [ ] `tests/test_pack.py`
 - [ ] `tests/test_remote.py`

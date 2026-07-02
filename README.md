@@ -53,6 +53,7 @@
 - `pygit stash push`
 - `pygit stash apply`
 - `pygit stash pop`
+- `pygit merge <target>`
 - `.pygit` 基础目录初始化。
 - loose object 编码、SHA-1 计算、zlib 压缩写入。
 - loose object 解压、header 解析、size 校验、SHA-1 反校验。
@@ -69,11 +70,12 @@
 - soft、mixed、hard reset。
 - reset 目标支持分支名、commit SHA-1、轻量标签和附注标签。
 - 基础 stash push/apply/pop。
+- merge 支持 LCA、快进、非快进自动合并、冲突标记和 index stage 1/2/3。
 - 基于 Python 标准库 `unittest` 的测试目录。
 
 尚未实现：
 
-- merge。
+- packfile 和远端同步。
 - packfile、fetch、push、clone。
 
 ## 快速使用
@@ -149,6 +151,7 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - `tag` 轻量标签和附注标签。
 - `reset` soft、mixed、hard。
 - `stash` push、apply、pop。
+- `merge` LCA、快进、三方合并和冲突隔离。
 - CLI `init/hash-object/cat-file/add/write-tree/commit/log` 基础链路。
 
 后续每个核心模块都必须补充对应测试：
@@ -188,6 +191,7 @@ python-git-reproduction/
 │   ├── errors.py
 │   ├── index.py
 │   ├── lockfile.py
+│   ├── merge.py
 │   ├── objects.py
 │   ├── paths.py
 │   ├── refs.py
@@ -203,6 +207,7 @@ python-git-reproduction/
 │   ├── test_branch.py
 │   ├── test_checkout.py
 │   ├── test_index.py
+│   ├── test_merge.py
 │   ├── test_objects.py
 │   ├── test_refs_commit.py
 │   ├── test_repository.py
@@ -389,7 +394,7 @@ Python 源码必须有充分中文注释：
 
 ## 当前限制
 
-当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status`、`rm`、`branch`、`checkout`、`switch`、`tag`、`reset` 与 `stash` 能力。它还没有实现 merge、packfile 和远端同步。
+当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status`、`rm`、`branch`、`checkout`、`switch`、`tag`、`reset`、`stash` 与 `merge` 能力。它还没有实现 packfile 和远端同步。
 
 项目明确不实现 Git LFS。大文件后续只按普通 Git blob 和 packfile 路线优化，不引入 LFS pointer、LFS filter、LFS 对象目录或 LFS 远端协议。
 

@@ -13,6 +13,7 @@ from pathlib import Path
 from .checkout import checkout_target, switch_branch
 from .commit import commit_index, create_commit, parse_commit, walk_first_parent
 from .errors import PygitError
+from .merge import merge
 from .objects import object_id, read_object, write_object
 from .refs import create_branch, current_branch_name, current_commit, delete_branch, list_branches, update_ref
 from .reset import index_entries_from_tree, reset
@@ -102,6 +103,10 @@ def build_parser() -> argparse.ArgumentParser:
     stash_push_parser.add_argument("-m", "--message", default="WIP", help="stash 说明")
     stash_sub.add_parser("apply", help="应用栈顶 stash")
     stash_sub.add_parser("pop", help="应用并移除栈顶 stash")
+
+    merge_parser = subparsers.add_parser("merge", help="合并分支或 commit")
+    merge_parser.add_argument("target", help="要合并的分支名、标签或 commit")
+    merge_parser.add_argument("-m", "--message", help="自动合并提交说明")
 
     return parser
 
@@ -323,6 +328,15 @@ def cmd_stash(args: argparse.Namespace) -> int:
     raise PygitError(f"unsupported stash command: {command}")
 
 
+def cmd_merge(args: argparse.Namespace) -> int:
+    """执行 merge 命令。"""
+
+    repo = find_repository(Path.cwd())
+    oid = merge(repo, args.target, args.message)
+    print(oid)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     """命令行主函数，返回进程退出码。"""
 
@@ -365,6 +379,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_reset(args)
         if args.command == "stash":
             return cmd_stash(args)
+        if args.command == "merge":
+            return cmd_merge(args)
     except PygitError as exc:
         print(f"fatal: {exc}", file=sys.stderr)
         return 1
