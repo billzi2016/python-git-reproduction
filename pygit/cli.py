@@ -15,7 +15,8 @@ from .errors import PygitError
 from .objects import object_id, read_object, write_object
 from .refs import current_commit, update_ref
 from .repository import find_repository, init_repository
-from .working_tree import add_paths, build_tree_from_index, format_tree_pretty
+from .status import collect_status, format_status
+from .working_tree import add_paths, build_tree_from_index, format_tree_pretty, remove_paths
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -40,6 +41,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     add = subparsers.add_parser("add", help="把文件加入暂存区")
     add.add_argument("paths", nargs="+", help="要加入暂存区的文件或目录")
+
+    rm = subparsers.add_parser("rm", help="从暂存区和工作区删除文件")
+    rm.add_argument("--cached", action="store_true", help="只从暂存区删除，保留工作区文件")
+    rm.add_argument("paths", nargs="+", help="要删除的已追踪文件")
+
+    subparsers.add_parser("status", help="显示工作区状态")
 
     subparsers.add_parser("write-tree", help="把当前 index 写成 tree 对象")
 
@@ -107,6 +114,22 @@ def cmd_add(args: argparse.Namespace) -> int:
 
     repo = find_repository(Path.cwd())
     add_paths(repo, [Path(path) for path in args.paths])
+    return 0
+
+
+def cmd_rm(args: argparse.Namespace) -> int:
+    """执行 rm 命令。"""
+
+    repo = find_repository(Path.cwd())
+    remove_paths(repo, [Path(path) for path in args.paths], cached=args.cached)
+    return 0
+
+
+def cmd_status(args: argparse.Namespace) -> int:
+    """执行 status 命令。"""
+
+    repo = find_repository(Path.cwd())
+    sys.stdout.write(format_status(collect_status(repo)))
     return 0
 
 
@@ -179,6 +202,10 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_cat_file(args)
         if args.command == "add":
             return cmd_add(args)
+        if args.command == "rm":
+            return cmd_rm(args)
+        if args.command == "status":
+            return cmd_status(args)
         if args.command == "write-tree":
             return cmd_write_tree(args)
         if args.command == "commit-tree":

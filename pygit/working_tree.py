@@ -43,6 +43,23 @@ def iter_addable_files(repo: Repository, targets: list[Path]) -> list[Path]:
     return sorted(set(files))
 
 
+def iter_worktree_files(repo: Repository) -> list[tuple[str, Path]]:
+    """扫描工作区中除 `.pygit` 外的普通文件。
+
+    返回:
+        `(git_relative_path, absolute_path)` 列表。路径使用 Git 内部正斜杠格式。
+    """
+
+    files: list[tuple[str, Path]] = []
+    for child in sorted(repo.worktree.rglob("*")):
+        relative_parts = child.relative_to(repo.worktree).parts
+        if PYGIT_DIR_NAME in relative_parts:
+            continue
+        if child.is_file():
+            files.append((normalize_repo_relative(repo.worktree, child), child))
+    return files
+
+
 def add_paths(repo: Repository, targets: list[Path]) -> list[IndexEntry]:
     """把路径写入对象库并更新 index。
 
@@ -72,6 +89,32 @@ def build_tree_from_index(repo: Repository) -> str:
             raise PathSafetyError("cannot write tree with unresolved conflict entries")
         root.add(entry.path.split("/"), entry)
     return write_tree_node(repo, root)
+
+
+def remove_paths(repo: Repository, targets: list[Path], *, cached: bool) -> list[str]:
+    """从 index 中移除路径，必要时删除工作区文件。
+
+    删除物理文件属于危险操作，因此只允许删除已经被 index 跟踪的普通文件。
+    传入路径也必须经过工作区边界检查，不能通过 `..` 或绝对路径逃逸。
+    """
+
+    entries = read_index(repo)
+    by_path = {entry.path: entry for entry in entries}
+    removed: list[str] = []
+    for target in targets:
+        safe_target = ensure_within_directory(repo.worktree, repo.worktree / target)
+        relative = normalize_repo_relative(repo.worktree, safe_target)
+        if relative not in by_path:
+            raise PathSafetyError(f"path is not tracked: {relative}")
+        removed.append(relative)
+        if not cached:
+            # 只删除已追踪文件对应路径，不做递归目录删除，避免误删用户目录。
+            if safe_target.exists() and safe_target.is_file():
+                safe_target.unlink()
+
+    remaining = [entry for entry in entries if entry.path not in set(removed)]
+    write_index(repo, remaining)
+    return removed
 
 
 class TreeNode:
@@ -121,6 +164,34 @@ def encode_tree_entries(entries: list[tuple[str, str, str]]) -> bytes:
     return b"".join(chunks)
 
 
+def read_tree_recursive(repo: Repository, tree_oid: str, prefix: str = "") -> list[tuple[str, str, str]]:
+    """递归展开 tree 对象为 `(path, mode, oid)` 列表。"""
+
+    tree = read_object(repo, tree_oid)
+    if tree.object_type != "tree":
+        raise PathSafetyError("object is not a tree")
+
+    entries: list[tuple[str, str, str]] = []
+    offset = 0
+    while offset < len(tree.content):
+        nul = tree.content.find(b"\x00", offset)
+        if nul == -1:
+            raise PathSafetyError("tree entry is missing NUL separator")
+        header = tree.content[offset:nul].decode("utf-8")
+        mode, name = header.split(" ", 1)
+        oid_raw = tree.content[nul + 1 : nul + 21]
+        if len(oid_raw) != 20:
+            raise PathSafetyError("tree entry sha1 is truncated")
+        oid = oid_raw.hex()
+        path = f"{prefix}{name}"
+        if mode == "40000":
+            entries.extend(read_tree_recursive(repo, oid, f"{path}/"))
+        else:
+            entries.append((path, mode, oid))
+        offset = nul + 21
+    return entries
+
+
 def format_tree_pretty(repo: Repository, content: bytes) -> bytes:
     """把 tree 原始内容格式化为类似 `git cat-file -p` 的文本。"""
 
@@ -140,4 +211,3 @@ def format_tree_pretty(repo: Repository, content: bytes) -> bytes:
         lines.append(f"{mode} {object_type} {oid}\t{name}")
         offset = nul + 21
     return ("\n".join(lines) + ("\n" if lines else "")).encode("utf-8")
-
