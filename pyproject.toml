@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "python-git-reproduction"
+version = "0.1.0"
+description = "A pure Python reproduction of Git core storage and workflows."
+requires-python = ">=3.10"
+
+[project.scripts]
+pygit = "pygit.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["pygit*"]
+

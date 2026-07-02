@@ -1,0 +1,63 @@
+"""CLI 基础命令测试。
+
+命令行测试只覆盖 MVP 暴露给用户的行为：init、hash-object 和 cat-file。
+更复杂的 Git 工作流会在 index、commit、refs 模块实现后继续补充。
+"""
+
+from __future__ import annotations
+
+import os
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+
+class CliTests(unittest.TestCase):
+    """通过 `python -m pygit.cli` 验证命令行行为。"""
+
+    def run_cli(self, cwd: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
+        """在指定目录运行 pygit CLI，并捕获 stdout/stderr。"""
+
+        env = os.environ.copy()
+        project_root = Path(__file__).resolve().parents[1]
+        env["PYTHONPATH"] = str(project_root)
+        return subprocess.run(
+            [sys.executable, "-m", "pygit.cli", *args],
+            cwd=cwd,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+
+    def test_init_hash_object_and_cat_file(self) -> None:
+        """CLI 应能完成 init、写 blob、查看类型/大小/内容。"""
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sample = root / "sample.txt"
+            sample.write_bytes(b"hello\n")
+
+            init_result = self.run_cli(root, "init")
+            self.assertEqual(init_result.returncode, 0, init_result.stderr.decode())
+
+            hash_result = self.run_cli(root, "hash-object", "-w", "sample.txt")
+            self.assertEqual(hash_result.returncode, 0, hash_result.stderr.decode())
+            oid = hash_result.stdout.decode().strip()
+            self.assertEqual(len(oid), 40)
+
+            type_result = self.run_cli(root, "cat-file", "-t", oid)
+            self.assertEqual(type_result.stdout, b"blob\n")
+
+            size_result = self.run_cli(root, "cat-file", "-s", oid)
+            self.assertEqual(size_result.stdout, b"6\n")
+
+            pretty_result = self.run_cli(root, "cat-file", "-p", oid)
+            self.assertEqual(pretty_result.stdout, b"hello\n")
+
+
+if __name__ == "__main__":
+    unittest.main()
+
