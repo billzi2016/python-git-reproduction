@@ -391,6 +391,8 @@ Python 源码必须有充分中文注释：
 
 当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status`、`rm`、`branch`、`checkout`、`switch`、`tag`、`reset` 与 `stash` 能力。它还没有实现 merge、packfile 和远端同步。
 
+项目明确不实现 Git LFS。大文件后续只按普通 Git blob 和 packfile 路线优化，不引入 LFS pointer、LFS filter、LFS 对象目录或 LFS 远端协议。
+
 现阶段 `.pygit` 是项目自己的仓库目录，不能直接替代 `.git`。后续会逐步提高与官方 Git 的格式兼容性，并通过测试验证生成数据是否能被官方 Git 工具识别。
 
 ## 提交要求

@@ -25,6 +25,8 @@ DRY 在本项目中的要求：
 
 超过 50MB 的文件必须使用 64KB 块进行流式读取。`hash-object`、`add` 和 pack 写入流程不能无条件把大文件完整读入内存。
 
+项目不实现 Git LFS。大文件不能通过 LFS pointer 替代普通 blob，也不能引入 `.gitattributes` LFS filter、LFS 本地对象库或 LFS 远端 batch API。所有大文件能力都必须沿普通 Git 对象库和 packfile 路线优化。
+
 ## 锁文件
 
 写入 index 或 refs 前必须创建 `.lock` 文件。写入完成后使用 `os.replace` 原子替换目标文件。
