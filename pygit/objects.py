@@ -126,7 +126,13 @@ def read_object(repo: Repository, oid: str) -> GitObject:
     full_oid = resolve_oid(repo, oid)
     path = object_path(repo, full_oid)
     if not path.is_file():
-        raise ObjectError(f"object not found: {oid}")
+        from .pack import find_pack_object, read_packed_object
+
+        packed = find_pack_object(repo, full_oid)
+        if packed is None:
+            raise ObjectError(f"object not found: {oid}")
+        pack_path, entry = packed
+        return read_packed_object(repo, pack_path, entry)
     try:
         raw = zlib.decompress(path.read_bytes())
     except zlib.error as exc:
@@ -145,19 +151,23 @@ def resolve_oid(repo: Repository, oid_prefix: str) -> str:
     if len(oid_prefix) == 40:
         return oid_prefix
 
-    directory = repo.objects_dir / oid_prefix[:2]
-    if not directory.is_dir():
-        raise ObjectError(f"object not found: {oid_prefix}")
-
     matches = []
-    rest = oid_prefix[2:]
-    for candidate in directory.iterdir():
-        if candidate.name.startswith(rest):
-            matches.append(oid_prefix[:2] + candidate.name)
+    directory = repo.objects_dir / oid_prefix[:2]
+    if directory.is_dir():
+        rest = oid_prefix[2:]
+        for candidate in directory.iterdir():
+            if candidate.name.startswith(rest):
+                matches.append(oid_prefix[:2] + candidate.name)
+
+    from .pack import find_pack_object
+
+    packed = find_pack_object(repo, oid_prefix)
+    if packed is not None:
+        matches.append(packed[1].oid)
 
     if not matches:
         raise ObjectError(f"object not found: {oid_prefix}")
-    if len(matches) > 1:
+    unique_matches = sorted(set(matches))
+    if len(unique_matches) > 1:
         raise ObjectError(f"ambiguous object id: {oid_prefix}")
-    return matches[0]
-
+    return unique_matches[0]

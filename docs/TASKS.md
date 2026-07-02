@@ -174,11 +174,11 @@
 
 ## 12. Packfile 与远端
 
-- [ ] pack v2 读取。
-- [ ] idx v2 读取。
-- [ ] pack 对象随机寻址。
-- [ ] delta 对象解析。
-- [ ] pack 生成。
+- [x] pack v2 读取。
+- [x] idx v2 读取。
+- [x] pack 对象随机寻址。
+- [x] delta 对象解析。
+- [x] pack 生成。
 - [ ] `clone`
 - [ ] `fetch`
 - [ ] `push`
@@ -199,5 +199,5 @@
 - [x] `tests/test_reset.py`
 - [x] `tests/test_tag.py`
 - [x] `tests/test_merge.py`
-- [ ] `tests/test_pack.py`
+- [x] `tests/test_pack.py`
 - [ ] `tests/test_remote.py`

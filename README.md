@@ -71,11 +71,12 @@
 - reset 目标支持分支名、commit SHA-1、轻量标签和附注标签。
 - 基础 stash push/apply/pop。
 - merge 支持 LCA、快进、非快进自动合并、冲突标记和 index stage 1/2/3。
+- pack v2 与 idx v2 基础读写、idx 随机寻址、ref-delta 解析和非 delta pack 生成。
 - 基于 Python 标准库 `unittest` 的测试目录。
 
 尚未实现：
 
-- packfile 和远端同步。
+- 远端同步。
 - packfile、fetch、push、clone。
 
 ## 快速使用
@@ -376,11 +377,11 @@ Python 源码必须有充分中文注释：
 
 ### V4：Packfile
 
-- pack v2 读取。
-- idx v2 读取。
-- pack 随机对象定位。
-- delta 对象解析。
-- pack 生成。
+- pack v2 读取：已实现。
+- idx v2 读取：已实现。
+- pack 随机对象定位：已实现。
+- delta 对象解析：已实现 ref-delta。
+- pack 生成：已实现非 delta pack。
 
 ### V5：远端同步
 
@@ -394,7 +395,7 @@ Python 源码必须有充分中文注释：
 
 ## 当前限制
 
-当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status`、`rm`、`branch`、`checkout`、`switch`、`tag`、`reset`、`stash` 与 `merge` 能力。它还没有实现 packfile 和远端同步。
+当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status`、`rm`、`branch`、`checkout`、`switch`、`tag`、`reset`、`stash`、`merge` 与 packfile 能力。它还没有实现远端同步。
 
 项目明确不实现 Git LFS。大文件后续只按普通 Git blob 和 packfile 路线优化，不引入 LFS pointer、LFS filter、LFS 对象目录或 LFS 远端协议。
 
