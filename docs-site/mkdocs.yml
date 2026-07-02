@@ -16,68 +16,114 @@ theme:
     - search.suggest
     - content.code.copy
 
-nav:
-  - Home: index.md
-  - Getting Started: getting-started.md
-  - User Guide:
-      - Overview: user-guide/index.md
-      - Local Workflow: user-guide/local-workflow.md
-      - Pygit Server: user-guide/pygit-server.md
-      - Commands: user-guide/commands.md
-  - Git Teaching:
-      - Overview: git-teaching/index.md
-      - Git Object Model: git-teaching/git-object-model.md
-      - Index and Staging: git-teaching/index-and-staging.md
-      - Commits and DAG: git-teaching/commits-and-dag.md
-      - Merge Conflict: git-teaching/merge-conflict.md
-      - Packfile: git-teaching/packfile.md
-  - Build Git Teaching:
-      - Overview: build-git-teaching/index.md
-      - Architecture: build-git-teaching/architecture.md
-      - Object Database: build-git-teaching/object-database.md
-      - Index V2: build-git-teaching/index-v2.md
-      - Refs: build-git-teaching/refs.md
-      - Merge Engine: build-git-teaching/merge-engine.md
-      - Pygit Daemon: build-git-teaching/pygit-daemon.md
-  - SDD Teaching:
-      - Overview: sdd-teaching/index.md
-      - What Is SDD: sdd-teaching/what-is-sdd.md
-      - PRD to Tasks: sdd-teaching/prd-to-tasks.md
-      - Testing Strategy: sdd-teaching/testing-strategy.md
-      - Dangerous Commands: sdd-teaching/dangerous-commands.md
-      - No Mock Policy: sdd-teaching/no-mock-policy.md
-  - Project:
-      - Overview: project/index.md
-      - Tasks: project/tasks.md
-      - Project Tree: project/project-tree.md
-      - SDD Requirements: project/sdd-requirements.md
-  - PRD:
-      - Overview: prd/index.md
-      - Project Overview: prd/00-overview.md
-      - Repository Layout: prd/01-repository-layout.md
-      - Object Database: prd/02-object-database.md
-      - Index: prd/03-index.md
-      - Plumbing Commands: prd/04-plumbing-commands.md
-      - Porcelain Commands: prd/05-porcelain-commands.md
-      - Merge: prd/06-merge.md
-      - Packfile and Remote: prd/07-packfile-remote.md
-      - Non Functional: prd/08-non-functional.md
-      - Roadmap: prd/09-roadmap.md
-  - 中文:
-      - 首页: zh/index.md
-      - 快速开始: zh/getting-started.md
-      - 项目:
-          - 总览: zh/project/index.md
-          - 任务清单: zh/project/tasks.md
-          - 项目结构: zh/project/project-tree.md
-          - SDD 工程要求: zh/project/sdd-requirements.md
-      - SDD 教学:
-          - 总览: zh/sdd-teaching/index.md
-      - PRD:
-          - 总览: zh/prd/index.md
-
 plugins:
   - search
+  - i18n:
+      docs_structure: folder
+      fallback_to_default: true
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+          nav:
+            - Home: index.md
+            - Getting Started: getting-started.md
+            - User Guide:
+                - Overview: user-guide/index.md
+                - Local Workflow: user-guide/local-workflow.md
+                - Pygit Server: user-guide/pygit-server.md
+                - Commands: user-guide/commands.md
+            - Git Teaching:
+                - Overview: git-teaching/index.md
+                - Git Object Model: git-teaching/git-object-model.md
+                - Index and Staging: git-teaching/index-and-staging.md
+                - Commits and DAG: git-teaching/commits-and-dag.md
+                - Merge Conflict: git-teaching/merge-conflict.md
+                - Packfile: git-teaching/packfile.md
+            - Build Git Teaching:
+                - Overview: build-git-teaching/index.md
+                - Architecture: build-git-teaching/architecture.md
+                - Object Database: build-git-teaching/object-database.md
+                - Index V2: build-git-teaching/index-v2.md
+                - Refs: build-git-teaching/refs.md
+                - Merge Engine: build-git-teaching/merge-engine.md
+                - Pygit Daemon: build-git-teaching/pygit-daemon.md
+            - SDD Teaching:
+                - Overview: sdd-teaching/index.md
+                - What Is SDD: sdd-teaching/what-is-sdd.md
+                - PRD to Tasks: sdd-teaching/prd-to-tasks.md
+                - Testing Strategy: sdd-teaching/testing-strategy.md
+                - Dangerous Commands: sdd-teaching/dangerous-commands.md
+                - No Mock Policy: sdd-teaching/no-mock-policy.md
+            - Project:
+                - Overview: project/index.md
+                - Tasks: project/tasks.md
+                - Project Tree: project/project-tree.md
+                - SDD Requirements: project/sdd-requirements.md
+            - PRD:
+                - Overview: prd/index.md
+                - Project Overview: prd/00-overview.md
+                - Repository Layout: prd/01-repository-layout.md
+                - Object Database: prd/02-object-database.md
+                - Index: prd/03-index.md
+                - Plumbing Commands: prd/04-plumbing-commands.md
+                - Porcelain Commands: prd/05-porcelain-commands.md
+                - Merge: prd/06-merge.md
+                - Packfile and Remote: prd/07-packfile-remote.md
+                - Non Functional: prd/08-non-functional.md
+                - Roadmap: prd/09-roadmap.md
+        - locale: zh
+          name: 中文
+          build: true
+          nav:
+            - 首页: index.md
+            - 快速开始: getting-started.md
+            - Git 教学:
+                - 总览: git-teaching/index.md
+                - Git 对象模型: git-teaching/git-object-model.md
+                - Index 与暂存区: git-teaching/index-and-staging.md
+                - Commit 与 DAG: git-teaching/commits-and-dag.md
+                - 合并冲突: git-teaching/merge-conflict.md
+                - Packfile: git-teaching/packfile.md
+            - 实现 Git 教学:
+                - 总览: build-git-teaching/index.md
+                - 架构: build-git-teaching/architecture.md
+                - 对象数据库: build-git-teaching/object-database.md
+                - Index V2: build-git-teaching/index-v2.md
+                - Refs: build-git-teaching/refs.md
+                - 合并引擎: build-git-teaching/merge-engine.md
+                - Pygit 服务端: build-git-teaching/pygit-daemon.md
+            - 项目:
+                - 总览: project/index.md
+                - 任务清单: project/tasks.md
+                - 项目结构: project/project-tree.md
+                - SDD 工程要求: project/sdd-requirements.md
+            - SDD 教学:
+                - 总览: sdd-teaching/index.md
+            - PRD:
+                - 总览: prd/index.md
+                - 项目概述: prd/00-overview.md
+                - 仓库结构: prd/01-repository-layout.md
+                - 对象数据库: prd/02-object-database.md
+                - Index 暂存区: prd/03-index.md
+                - 管道命令: prd/04-plumbing-commands.md
+                - 瓷器命令: prd/05-porcelain-commands.md
+                - 合并: prd/06-merge.md
+                - Packfile 与远端: prd/07-packfile-remote.md
+                - 非功能要求: prd/08-non-functional.md
+                - 路线图: prd/09-roadmap.md
+
+extra:
+  alternate:
+    - name: English
+      link: /
+      lang: en
+    - name: 中文
+      link: /zh/
+      lang: zh
 
 markdown_extensions:
   - admonition

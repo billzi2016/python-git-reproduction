@@ -1,5 +1,10 @@
 # python-git-reproduction
 
+[![Docs](https://img.shields.io/badge/docs-online-blue)](https://billzi2016.github.io/python-git-reproduction/)
+[![English](https://img.shields.io/badge/language-English-black)](README.md)
+[![中文](https://img.shields.io/badge/language-%E4%B8%AD%E6%96%87-red)](README_CN.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 `python-git-reproduction` 是一个使用纯 Python 3 复现 Git 的工程。项目目标不是做一个简化版版本控制玩具，而是尽可能完整地实现 Git 的核心底层逻辑、上层工作流、对象存储格式、索引格式、引用系统、合并机制、打包文件和远端同步能力。
 
 项目运行后会在工作区生成 `.pygit` 目录。`.pygit` 的设计目标是尽量兼容官方 Git 的对象格式、索引格式、引用格式和 packfile 格式。
@@ -11,6 +16,40 @@
 - https://billzi2016.github.io/python-git-reproduction/
 
 文档站默认优先展示英文内容。中文页面已经加入站点导航，但需要用户主动点击顶层“中文”分组进入。
+
+## 文档系统说明
+
+当前仓库维护两层文档体系：
+
+- `docs/`：内部工程文档源，包含拆分后的 PRD、SDD 工程要求、任务清单和项目结构规划。
+- `docs-site/`：公开文档站源码，用于生成对外展示的网站文档。
+
+公开文档站采用：
+
+- **MkDocs Material** 作为站点框架和主题；
+- **mkdocs-static-i18n** 作为双语文档生成与按页切换机制。
+
+双语文档目录结构为：
+
+- `docs-site/docs/en/`：英文页面；
+- `docs-site/docs/zh/`：中文页面。
+
+当前站点遵循 **英文优先** 原则：
+
+- 英文是默认语言和默认入口；
+- 中文通过语言切换器进入；
+- 当中英文两边存在同一路径页面时，i18n 配置会尽量保持在对应页面之间切换，而不是每次都跳回首页。
+
+实际维护边界是：
+
+- `docs/` 继续保存内部规格、任务和工程约束；
+- `docs-site/` 负责面向读者的教程化、站点化文档；
+- 对外访问者默认看到英文；
+- 中文作为完整的第二语言内容持续补充。
+
+## 协议
+
+本仓库使用 MIT 协议发布。详见 [LICENSE](LICENSE)。
 
 ## 项目目标
 

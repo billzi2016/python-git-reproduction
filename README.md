@@ -1,5 +1,10 @@
 # python-git-reproduction
 
+[![Docs](https://img.shields.io/badge/docs-online-blue)](https://billzi2016.github.io/python-git-reproduction/)
+[![English](https://img.shields.io/badge/language-English-black)](README.md)
+[![中文](https://img.shields.io/badge/language-%E4%B8%AD%E6%96%87-red)](README_CN.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 `python-git-reproduction` is a project that reproduces Git in pure Python 3. The goal of this project is not to build a simplified version-control toy, but to implement Git's core low-level logic, high-level workflow, object storage format, index format, reference system, merge engine, packfile handling, and remote synchronization capabilities as completely as possible.
 
 When the project runs, it creates a `.pygit` directory in the workspace. The design goal of `.pygit` is to be as compatible as possible with official Git object formats, index formats, reference formats, and packfile formats.
@@ -11,6 +16,40 @@ Public documentation site:
 - https://billzi2016.github.io/python-git-reproduction/
 
 The site is English-first by default. Chinese pages are available from the top-level Chinese navigation group inside the site.
+
+## Documentation System
+
+This repository now maintains two documentation layers:
+
+- `docs/`: internal engineering documents, including the split PRD, SDD requirements, tasks, and project-structure planning.
+- `docs-site/`: the public documentation website source built with MkDocs.
+
+The public documentation site uses:
+
+- **MkDocs Material** as the theme and site framework.
+- **mkdocs-static-i18n** for bilingual site generation and per-page language switching.
+
+The bilingual documentation structure is organized as:
+
+- `docs-site/docs/en/`: English pages.
+- `docs-site/docs/zh/`: Chinese pages.
+
+The site is intentionally **English-first**:
+
+- English is the default language and default entry point.
+- Chinese is available through the language selector.
+- When the same page exists in both languages, the MkDocs i18n setup is intended to keep readers on the corresponding page while switching languages.
+
+In practice, this means:
+
+- readers opening the site directly will land on English content first,
+- Chinese readers can switch through the site language selector,
+- internal source specifications remain under `docs/`,
+- reader-facing tutorials and curated explanations live under `docs-site/`.
+
+## License
+
+This repository is released under the MIT License. See [LICENSE](LICENSE).
 
 ## Project Goals
 
