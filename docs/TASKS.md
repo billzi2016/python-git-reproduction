@@ -61,7 +61,7 @@
 - [x] `cat-file -p` blob 输出。
 - [x] `cat-file -p` tree 格式化输出。
 - [x] `write-tree`
-- [ ] `read-tree`
+- [x] `read-tree`
 - [x] `commit-tree`
 - [x] `update-ref`
 

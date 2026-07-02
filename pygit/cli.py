@@ -15,7 +15,7 @@ from .commit import commit_index, create_commit, parse_commit, walk_first_parent
 from .errors import PygitError
 from .objects import object_id, read_object, write_object
 from .refs import create_branch, current_branch_name, current_commit, delete_branch, list_branches, update_ref
-from .reset import reset
+from .reset import index_entries_from_tree, reset
 from .repository import find_repository, init_repository
 from .status import collect_status, format_status
 from .tag import create_annotated_tag, create_lightweight_tag, list_tags
@@ -52,6 +52,9 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("status", help="显示工作区状态")
 
     subparsers.add_parser("write-tree", help="把当前 index 写成 tree 对象")
+
+    read_tree = subparsers.add_parser("read-tree", help="把 tree 对象读入 index")
+    read_tree.add_argument("tree", help="根 tree 对象 ID")
 
     commit_tree = subparsers.add_parser("commit-tree", help="根据 tree 创建 commit 对象")
     commit_tree.add_argument("tree", help="根 tree 对象 ID")
@@ -164,6 +167,16 @@ def cmd_write_tree(args: argparse.Namespace) -> int:
 
     repo = find_repository(Path.cwd())
     print(build_tree_from_index(repo))
+    return 0
+
+
+def cmd_read_tree(args: argparse.Namespace) -> int:
+    """执行 read-tree 命令。"""
+
+    repo = find_repository(Path.cwd())
+    from .index import write_index
+
+    write_index(repo, index_entries_from_tree(repo, args.tree))
     return 0
 
 
@@ -304,6 +317,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_status(args)
         if args.command == "write-tree":
             return cmd_write_tree(args)
+        if args.command == "read-tree":
+            return cmd_read_tree(args)
         if args.command == "commit-tree":
             return cmd_commit_tree(args)
         if args.command == "update-ref":

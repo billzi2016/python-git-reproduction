@@ -77,6 +77,9 @@ class CliTests(unittest.TestCase):
             self.assertEqual(pretty_result.returncode, 0, pretty_result.stderr.decode())
             self.assertIn(b"hello.txt", pretty_result.stdout)
 
+            read_tree_result = self.run_cli(root, "read-tree", tree_oid)
+            self.assertEqual(read_tree_result.returncode, 0, read_tree_result.stderr.decode())
+
     def test_commit_and_log_oneline(self) -> None:
         """CLI 应能从 add 到 commit 再到 log 形成最小提交闭环。"""
 

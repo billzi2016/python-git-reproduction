@@ -30,6 +30,7 @@
 - `pygit cat-file -s`
 - `pygit cat-file -p`
 - `pygit write-tree`
+- `pygit read-tree`
 - `pygit commit-tree`
 - `pygit update-ref`
 - `pygit commit -m`
@@ -55,6 +56,7 @@
 - 唯一短 SHA-1 解析。
 - Git Index V2 基础读写、排序、padding 和 checksum。
 - 从 index 递归生成 tree 对象。
+- 从 tree 重建 index。
 - 基于当前分支 HEAD 创建 commit 并沿第一父链查看历史。
 - HEAD、index、工作区三方状态比较。
 - 已追踪文件从 index 移除和安全工作区删除。
@@ -323,6 +325,7 @@ Python 源码必须有充分中文注释：
 - Git Index V2 基础读写：已实现。
 - `add`：已实现。
 - `write-tree`：已实现。
+- `read-tree`：已实现。
 - `commit-tree`：已实现。
 - `update-ref`：已实现。
 - `commit`：已实现。

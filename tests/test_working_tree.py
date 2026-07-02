@@ -13,6 +13,7 @@ from pathlib import Path
 from pygit.index import read_index
 from pygit.objects import read_object
 from pygit.repository import init_repository
+from pygit.reset import index_entries_from_tree
 from pygit.working_tree import add_paths, build_tree_from_index, format_tree_pretty
 
 
@@ -53,7 +54,21 @@ class WorkingTreeTests(unittest.TestCase):
             self.assertIn("README.md", pretty)
             self.assertIn("src", pretty)
 
+    def test_read_tree_entries_from_tree(self) -> None:
+        """read-tree 底层能力应能从 tree 重建扁平 index 条目。"""
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            repo = init_repository(root)
+            (root / "src").mkdir()
+            (root / "src" / "app.py").write_bytes(b"print('hi')\n")
+            add_paths(repo, [Path(".")])
+            tree_oid = build_tree_from_index(repo)
+
+            entries = index_entries_from_tree(repo, tree_oid)
+
+            self.assertEqual([entry.path for entry in entries], ["src/app.py"])
+
 
 if __name__ == "__main__":
     unittest.main()
-
