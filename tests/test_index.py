@@ -11,7 +11,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from pygit.index import IndexEntry, read_index, write_index
+import hashlib
+import struct
+
+from pygit.index import INDEX_SIGNATURE, INDEX_VERSION, IndexEntry, encode_index, read_index, write_index
 from pygit.repository import init_repository
 
 
@@ -60,7 +63,19 @@ class IndexTests(unittest.TestCase):
 
             self.assertEqual(read_index(repo), [])
 
+    def test_read_index_skips_extension_area(self) -> None:
+        """读取 index 时应跳过扩展区，兼容官方 Git 写入的扩展。"""
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = init_repository(Path(tmp))
+            entry = self.make_entry("a.txt", "1" * 40)
+            body = encode_index([entry])[:-20] + b"TREE" + struct.pack(">I", 4) + b"data"
+            repo.index_path.write_bytes(body + hashlib.sha1(body).digest())
+
+            entries = read_index(repo)
+
+            self.assertEqual([item.path for item in entries], ["a.txt"])
+
 
 if __name__ == "__main__":
     unittest.main()
-

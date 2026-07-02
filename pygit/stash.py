@@ -21,6 +21,7 @@ from .repository import Repository
 from .reset import reset
 from .status import collect_status
 from .working_tree import build_tree_from_entries, iter_worktree_files
+from .merge import MergeConflict, merge_trees, write_conflict_files
 
 
 class StashError(PygitError):
@@ -82,12 +83,29 @@ def build_worktree_tree(repo: Repository) -> str:
 
 
 def apply_stash_commit(repo: Repository, oid: str) -> None:
-    """把 stash commit 的 tree 恢复到工作区和 index。"""
+    """把 stash commit 以三方合并方式恢复到工作区和 index。"""
 
     commit = parse_commit(repo, oid)
-    target_files = materialize_tree_plan(repo, commit.tree)
+    if not commit.parents:
+        target_files = materialize_tree_plan(repo, commit.tree)
+        remove_tracked_files(repo)
+        write_index(repo, write_tree_to_worktree(repo, target_files))
+        return
+
+    current = current_commit(repo)
+    if current is None:
+        target_files = materialize_tree_plan(repo, commit.tree)
+        remove_tracked_files(repo)
+        write_index(repo, write_tree_to_worktree(repo, target_files))
+        return
+
+    result = merge_trees(repo, commit.parents[0], current, oid, "stash")
     remove_tracked_files(repo)
-    write_index(repo, write_tree_to_worktree(repo, target_files))
+    clean_entries = write_tree_to_worktree(repo, result.clean_files)
+    write_index(repo, clean_entries + result.conflict_entries)
+    write_conflict_files(repo, result.conflict_files)
+    if result.conflict_files:
+        raise MergeConflict("stash conflicts detected")
 
 
 def read_stash_stack(repo: Repository) -> list[str]:
@@ -121,4 +139,3 @@ def peek_stash(repo: Repository) -> str:
     if not entries:
         raise StashError("no stash entries")
     return entries[-1]
-

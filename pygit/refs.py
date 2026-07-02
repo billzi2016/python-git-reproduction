@@ -181,6 +181,39 @@ def delete_branch(repo: Repository, name: str) -> None:
     path.unlink()
 
 
+def rename_branch(repo: Repository, old_name: str, new_name: str) -> None:
+    """重命名本地分支。"""
+
+    validate_branch_name(old_name)
+    validate_branch_name(new_name)
+    old_ref = f"refs/heads/{old_name}"
+    new_ref = f"refs/heads/{new_name}"
+    oid = read_ref(repo, old_ref)
+    if oid is None:
+        raise RefError(f"branch not found: {old_name}")
+    if ref_path(repo, new_ref).exists():
+        raise RefError(f"branch already exists: {new_name}")
+    update_ref(repo, new_ref, oid)
+    ref_path(repo, old_ref).unlink()
+    if current_branch_name(repo) == old_name:
+        set_head_ref(repo, new_ref)
+
+
+def set_upstream(repo: Repository, branch: str, upstream: str) -> None:
+    """记录分支上游信息到 config。"""
+
+    validate_branch_name(branch)
+    if read_ref(repo, f"refs/heads/{branch}") is None:
+        raise RefError(f"branch not found: {branch}")
+    config = repo.gitdir / "config"
+    text = config.read_text(encoding="utf-8") if config.exists() else "[core]\n\trepositoryformatversion = 0\n"
+    section = f'[branch "{branch}"]'
+    lines = [line for line in text.splitlines() if line.strip() != section]
+    lines.append(section)
+    lines.append(f"\tmerge = {upstream}")
+    config.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def validate_branch_name(name: str) -> None:
     """校验分支短名称，防止路径逃逸和明显非法引用。"""
 

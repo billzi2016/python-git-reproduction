@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import configparser
 import os
 import time
 from dataclasses import dataclass
@@ -29,16 +30,29 @@ class CommitInfo:
     message: str
 
 
-def default_identity() -> str:
+def default_identity(repo: Repository | None = None) -> str:
     """返回默认作者身份。
 
     真实 Git 会读取 config 和环境变量。MVP 先使用环境变量兜底，保证测试和
     本地运行都能生成稳定合法的 commit header。
     """
 
-    name = os.environ.get("PYGIT_AUTHOR_NAME") or os.environ.get("GIT_AUTHOR_NAME") or "Pygit User"
-    email = os.environ.get("PYGIT_AUTHOR_EMAIL") or os.environ.get("GIT_AUTHOR_EMAIL") or "pygit@example.com"
+    config_name, config_email = read_config_identity(repo) if repo is not None else (None, None)
+    name = os.environ.get("PYGIT_AUTHOR_NAME") or os.environ.get("GIT_AUTHOR_NAME") or config_name or "Pygit User"
+    email = os.environ.get("PYGIT_AUTHOR_EMAIL") or os.environ.get("GIT_AUTHOR_EMAIL") or config_email or "pygit@example.com"
     return f"{name} <{email}>"
+
+
+def read_config_identity(repo: Repository | None) -> tuple[str | None, str | None]:
+    """从 `.pygit/config` 读取 user.name 和 user.email。"""
+
+    if repo is None:
+        return None, None
+    parser = configparser.ConfigParser()
+    parser.read(repo.gitdir / "config", encoding="utf-8")
+    if not parser.has_section("user"):
+        return None, None
+    return parser.get("user", "name", fallback=None), parser.get("user", "email", fallback=None)
 
 
 def timezone_offset() -> str:
@@ -74,7 +88,7 @@ def create_commit(
 
     now = int(time.time() if timestamp is None else timestamp)
     tz = timezone_offset()
-    identity = default_identity()
+    identity = default_identity(repo)
     normalized_message = message.rstrip("\n") + "\n"
 
     lines = [f"tree {tree_oid}"]
@@ -136,4 +150,3 @@ def walk_first_parent(repo: Repository, start_oid: str | None, limit: int | None
             break
         current = info.parents[0] if info.parents else None
     return commits
-

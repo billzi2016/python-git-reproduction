@@ -1,6 +1,6 @@
 # 开发任务清单
 
-本文档用于跟踪 `python-git-reproduction` 的实现进度。已完成的任务使用 `[x]` 标记，未完成任务使用 `[ ]` 标记。
+本文档用于跟踪 `python-git-reproduction` 的实现进度。已完成的任务使用 `[x]` 标记。
 
 ## 0. 文档与工程约束
 
@@ -54,8 +54,8 @@
 - [x] 实现对象 SHA-1 反校验。
 - [x] 实现唯一短 SHA-1 解析。
 - [x] 实现损坏对象拒绝。
-- [ ] 实现大文件流式 hash-object。
-- [ ] 实现 packfile 内对象读取。
+- [x] 实现大文件流式 hash-object。
+- [x] 实现 packfile 内对象读取。
 
 ## 4. 管道命令
 
@@ -79,8 +79,8 @@
 - [x] 实现 index 读取 checksum 校验。
 - [x] 实现 index 条目路径排序。
 - [x] 实现同路径 add 更新而不是重复追加。
-- [ ] 实现 index stage 1/2/3 冲突条目写入。
-- [ ] 实现 index 扩展区。
+- [x] 实现 index stage 1/2/3 冲突条目写入。
+- [x] 实现 index 扩展区。
 
 ## 6. 本地提交闭环
 
@@ -90,8 +90,8 @@
 - [x] `commit -m` 从 index 创建提交并更新 HEAD 当前分支。
 - [x] `log` 沿第一父链输出提交历史。
 - [x] `log --oneline`。
-- [ ] 支持多父 commit 的完整展示。
-- [ ] 支持 author/committer 从 config 读取。
+- [x] 支持多父 commit 的完整展示。
+- [x] 支持 author/committer 从 config 读取。
 
 ## 7. 引用与分支
 
@@ -109,8 +109,8 @@
 - [x] `branch -d <name>` 删除非当前分支。
 - [x] 拒绝空仓库创建分支。
 - [x] 拒绝删除当前分支。
-- [ ] 支持分支重命名。
-- [ ] 支持上游分支追踪信息。
+- [x] 支持分支重命名。
+- [x] 支持上游分支追踪信息。
 
 ## 8. 工作区状态与删除
 
@@ -126,8 +126,8 @@
 - [x] `rm` 删除已追踪工作区文件并更新 index。
 - [x] `rm` 删除前做工作区边界检查。
 - [x] `rm` 不递归删除目录，避免误删用户文件。
-- [ ] 支持 ignore 规则。
-- [ ] 支持更接近 Git 的 status 输出格式。
+- [x] 支持 ignore 规则。
+- [x] 支持更接近 Git 的 status 输出格式。
 
 ## 9. 切换工作区
 
@@ -141,9 +141,9 @@
 - [x] checkout 写入目标 tree 文件。
 - [x] checkout 刷新 index。
 - [x] checkout 最后更新 HEAD。
-- [ ] 实现 Git 更细粒度的冲突前置校验。
-- [ ] 实现 `checkout -- <path>`。
-- [ ] 实现 `switch -c <branch>`。
+- [x] 实现 Git 更细粒度的冲突前置校验。
+- [x] 实现 `checkout -- <path>`。
+- [x] 实现 `switch -c <branch>`。
 
 ## 10. 尚未实现的瓷器命令
 
@@ -159,7 +159,7 @@
 - [x] `stash pop`
 - [x] stash 栈写入 `.pygit/refs/stash`。
 - [x] stash push 后恢复到 HEAD。
-- [ ] stash apply/pop 三方合并式应用。
+- [x] stash apply/pop 三方合并式应用。
 
 ## 11. 合并
 

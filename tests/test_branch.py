@@ -12,7 +12,7 @@ from pathlib import Path
 
 from pygit.commit import commit_index
 from pygit.errors import PygitError
-from pygit.refs import create_branch, delete_branch, list_branches, read_ref
+from pygit.refs import create_branch, delete_branch, list_branches, read_ref, rename_branch, set_upstream
 from pygit.repository import init_repository
 from pygit.working_tree import add_paths
 
@@ -47,7 +47,23 @@ class BranchTests(unittest.TestCase):
             delete_branch(repo, "dev")
             self.assertNotIn("dev", list_branches(repo))
 
+    def test_rename_branch_and_set_upstream(self) -> None:
+        """应支持分支重命名和上游配置写入。"""
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            repo = init_repository(root)
+            (root / "hello.txt").write_bytes(b"hello\n")
+            add_paths(repo, [Path("hello.txt")])
+            commit_index(repo, "initial\n")
+            create_branch(repo, "dev")
+
+            rename_branch(repo, "dev", "feature")
+            set_upstream(repo, "feature", "refs/remotes/origin/feature")
+
+            self.assertIn("feature", list_branches(repo))
+            self.assertIn('[branch "feature"]', repo.gitdir.joinpath("config").read_text(encoding="utf-8"))
+
 
 if __name__ == "__main__":
     unittest.main()
-

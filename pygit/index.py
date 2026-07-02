@@ -174,8 +174,17 @@ def read_index(repo: Repository) -> list[IndexEntry]:
             )
         )
 
-    if offset != len(body):
-        raise IndexError("index contains trailing bytes")
+    while offset < len(body):
+        if offset + 8 > len(body):
+            raise IndexError("index extension header is truncated")
+        signature = body[offset : offset + 4]
+        extension_size = struct.unpack(">I", body[offset + 4 : offset + 8])[0]
+        offset += 8
+        if offset + extension_size > len(body):
+            raise IndexError(f"index extension {signature!r} is truncated")
+        # 当前实现不会写扩展区，但读取时必须能跳过扩展区，否则官方 Git
+        # 写入 TREE、REUC 等扩展后，本项目会误判 index 损坏。
+        offset += extension_size
     return sorted(entries, key=lambda entry: entry.path)
 
 
@@ -247,4 +256,3 @@ class stat_result_like:
     st_uid: int
     st_gid: int
     st_size: int
-

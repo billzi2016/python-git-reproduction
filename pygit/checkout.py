@@ -70,6 +70,35 @@ def switch_branch(repo: Repository, branch: str) -> str:
     return branch_oid
 
 
+def checkout_paths(repo: Repository, paths: list[str]) -> None:
+    """从 HEAD 恢复指定路径到工作区和 index。"""
+
+    from .reset import index_entries_from_tree
+    from .refs import current_commit
+
+    commit_oid = current_commit(repo)
+    if commit_oid is None:
+        raise CheckoutError("cannot checkout paths without commits")
+    commit = parse_commit(repo, commit_oid)
+    entries = {entry.path: entry for entry in index_entries_from_tree(repo, commit.tree)}
+    selected = []
+    files = []
+    for path in paths:
+        if path not in entries:
+            raise CheckoutError(f"path not found in HEAD: {path}")
+        entry = entries[path]
+        blob = read_object(repo, entry.oid)
+        files.append((entry.path, format(entry.mode, "o"), entry.oid, blob.content))
+        selected.append(entry)
+    write_tree_to_worktree(repo, files)
+    from .index import read_index, write_index
+
+    by_path = {entry.path: entry for entry in read_index(repo)}
+    for entry in selected:
+        by_path[entry.path] = entry
+    write_index(repo, list(by_path.values()))
+
+
 def checkout_commit(repo: Repository, commit_oid: str, *, branch_ref: str | None) -> None:
     """把工作区、index 和 HEAD 切换到指定 commit。
 

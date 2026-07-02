@@ -11,7 +11,8 @@ from pathlib import Path
 
 from .errors import PathSafetyError
 from .index import IndexEntry, entry_from_stat, read_index, replace_entries, write_index
-from .objects import read_object, write_object
+from .ignore import is_ignored
+from .objects import read_object, write_file_object, write_object
 from .paths import ensure_within_directory, normalize_repo_relative
 from .repository import PYGIT_DIR_NAME, Repository
 
@@ -29,14 +30,15 @@ def iter_addable_files(repo: Repository, targets: list[Path]) -> list[Path]:
         if not safe_target.exists():
             raise PathSafetyError(f"path does not exist: {target}")
         if safe_target.is_file():
-            if PYGIT_DIR_NAME not in safe_target.relative_to(repo.worktree).parts:
+            relative = normalize_repo_relative(repo.worktree, safe_target)
+            if PYGIT_DIR_NAME not in safe_target.relative_to(repo.worktree).parts and not is_ignored(repo, relative):
                 files.append(safe_target)
             continue
         if safe_target.is_dir():
             for child in sorted(safe_target.rglob("*")):
                 if PYGIT_DIR_NAME in child.relative_to(repo.worktree).parts:
                     continue
-                if child.is_file():
+                if child.is_file() and not is_ignored(repo, normalize_repo_relative(repo.worktree, child)):
                     files.append(child)
             continue
         raise PathSafetyError(f"unsupported path type: {target}")
@@ -56,7 +58,9 @@ def iter_worktree_files(repo: Repository) -> list[tuple[str, Path]]:
         if PYGIT_DIR_NAME in relative_parts:
             continue
         if child.is_file():
-            files.append((normalize_repo_relative(repo.worktree, child), child))
+            relative = normalize_repo_relative(repo.worktree, child)
+            if not is_ignored(repo, relative):
+                files.append((relative, child))
     return files
 
 
@@ -70,8 +74,7 @@ def add_paths(repo: Repository, targets: list[Path]) -> list[IndexEntry]:
     new_entries: list[IndexEntry] = []
     for file_path in iter_addable_files(repo, targets):
         relative_path = normalize_repo_relative(repo.worktree, file_path)
-        content = file_path.read_bytes()
-        oid = write_object(repo, "blob", content)
+        oid = write_file_object(repo, file_path, "blob")
         new_entries.append(entry_from_stat(relative_path, oid, file_path.stat()))
 
     entries = replace_entries(read_index(repo), new_entries)

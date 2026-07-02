@@ -68,6 +68,7 @@ def init_repository(path: Path) -> Repository:
     worktree.mkdir(parents=True, exist_ok=True)
     (gitdir / "objects" / "info").mkdir(parents=True)
     (gitdir / "objects" / "pack").mkdir(parents=True)
+    (gitdir / "info").mkdir(parents=True)
     (gitdir / "refs" / "heads").mkdir(parents=True)
     (gitdir / "refs" / "tags").mkdir(parents=True)
     (gitdir / "refs" / "remotes").mkdir(parents=True)
@@ -75,6 +76,7 @@ def init_repository(path: Path) -> Repository:
     # HEAD 必须使用 Git 符号引用格式，后续 commit 会通过它找到当前分支。
     (gitdir / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
     (gitdir / "config").write_text("[core]\n\trepositoryformatversion = 0\n", encoding="utf-8")
+    (gitdir / "info" / "exclude").write_text("", encoding="utf-8")
     return Repository(worktree=worktree, gitdir=gitdir)
 
 

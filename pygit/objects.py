@@ -8,6 +8,7 @@ zlib 解压、header 解析、长度校验和 SHA-1 反校验。
 from __future__ import annotations
 
 import hashlib
+import os
 import zlib
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +17,7 @@ from .errors import ObjectError
 from .repository import Repository
 
 VALID_OBJECT_TYPES = {"blob", "tree", "commit", "tag"}
+STREAM_CHUNK_SIZE = 64 * 1024
 
 
 @dataclass(frozen=True)
@@ -90,6 +92,57 @@ def write_object(repo: Repository, object_type: str, content: bytes) -> str:
             tmp_path.unlink()
         except FileNotFoundError:
             pass
+    return oid
+
+
+def hash_file_object(path: Path, object_type: str = "blob") -> str:
+    """流式计算文件对象 SHA-1。
+
+    Git 对象 ID 需要先写 header，再写文件内容。这里先通过 stat 得到文件大小，
+    再按 64KB 分块读取，避免大文件一次性进入内存。
+    """
+
+    if object_type != "blob":
+        return object_id(object_type, path.read_bytes())
+    size = path.stat().st_size
+    sha1 = hashlib.sha1()
+    sha1.update(f"blob {size}".encode("ascii") + b"\x00")
+    with path.open("rb") as file:
+        while True:
+            chunk = file.read(STREAM_CHUNK_SIZE)
+            if not chunk:
+                break
+            sha1.update(chunk)
+    return sha1.hexdigest()
+
+
+def write_file_object(repo: Repository, path: Path, object_type: str = "blob") -> str:
+    """流式写入文件对象。
+
+    对 blob 使用 zlib 压缩器分块压缩，避免 50MB 以上文件造成内存峰值。
+    非 blob 类型不是文件内容的常规入口，仍走内存编码路径。
+    """
+
+    if object_type != "blob":
+        return write_object(repo, object_type, path.read_bytes())
+    oid = hash_file_object(path, "blob")
+    destination = object_path(repo, oid)
+    if destination.exists():
+        return oid
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = destination.with_name(f"{destination.name}.tmp")
+    compressor = zlib.compressobj(level=zlib.Z_BEST_COMPRESSION)
+    size = path.stat().st_size
+    with tmp_path.open("wb") as output:
+        output.write(compressor.compress(f"blob {size}".encode("ascii") + b"\x00"))
+        with path.open("rb") as source:
+            while True:
+                chunk = source.read(STREAM_CHUNK_SIZE)
+                if not chunk:
+                    break
+                output.write(compressor.compress(chunk))
+        output.write(compressor.flush())
+    os.replace(tmp_path, destination)
     return oid
 
 

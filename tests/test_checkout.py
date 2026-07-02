@@ -94,6 +94,24 @@ class CheckoutTests(unittest.TestCase):
             with self.assertRaises(CheckoutError):
                 switch_branch(repo, commit_oid)
 
+    def test_checkout_paths_restores_file(self) -> None:
+        """checkout -- path 应从 HEAD 恢复指定文件。"""
+
+        from pygit.checkout import checkout_paths
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            repo = init_repository(root)
+            path = root / "hello.txt"
+            path.write_bytes(b"committed\n")
+            add_paths(repo, [Path("hello.txt")])
+            commit_index(repo, "initial\n")
+            path.write_bytes(b"dirty\n")
+
+            checkout_paths(repo, ["hello.txt"])
+
+            self.assertEqual(path.read_bytes(), b"committed\n")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -14,8 +14,8 @@ from .checkout import checkout_target, switch_branch
 from .commit import commit_index, create_commit, parse_commit, walk_first_parent
 from .errors import PygitError
 from .merge import merge
-from .objects import object_id, read_object, write_object
-from .refs import create_branch, current_branch_name, current_commit, delete_branch, list_branches, update_ref
+from .objects import hash_file_object, read_object, write_file_object
+from .refs import create_branch, current_branch_name, current_commit, delete_branch, list_branches, rename_branch, set_upstream, update_ref
 from .remote import clone, fetch, push
 from .reset import index_entries_from_tree, reset
 from .repository import find_repository, init_repository
@@ -77,12 +77,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     branch = subparsers.add_parser("branch", help="列出、创建或删除本地分支")
     branch.add_argument("-d", "--delete", action="store_true", help="删除分支")
+    branch.add_argument("-m", "--move", nargs=2, metavar=("OLD", "NEW"), help="重命名分支")
+    branch.add_argument("--set-upstream-to", metavar="UPSTREAM", help="设置分支上游引用")
     branch.add_argument("name", nargs="?", help="分支名")
 
-    checkout = subparsers.add_parser("checkout", help="切换到分支或 commit")
-    checkout.add_argument("target", help="分支名或 commit SHA-1")
+    checkout = subparsers.add_parser("checkout", help="切换到分支、commit 或恢复路径")
+    checkout.add_argument("items", nargs=argparse.REMAINDER, help="分支名、commit SHA-1，或 -- 后面的路径")
 
     switch = subparsers.add_parser("switch", help="切换到本地分支")
+    switch.add_argument("-c", "--create", action="store_true", help="基于当前 HEAD 创建并切换分支")
     switch.add_argument("branch", help="分支名")
 
     tag = subparsers.add_parser("tag", help="列出或创建标签")
@@ -134,12 +137,11 @@ def cmd_init(args: argparse.Namespace) -> int:
 def cmd_hash_object(args: argparse.Namespace) -> int:
     """执行 hash-object 命令。"""
 
-    content = Path(args.path).read_bytes()
     if args.write:
         repo = find_repository(Path.cwd())
-        oid = write_object(repo, args.type, content)
+        oid = write_file_object(repo, Path(args.path), args.type)
     else:
-        oid = object_id(args.type, content)
+        oid = hash_file_object(Path(args.path), args.type)
     print(oid)
     return 0
 
@@ -183,6 +185,9 @@ def cmd_status(args: argparse.Namespace) -> int:
     """执行 status 命令。"""
 
     repo = find_repository(Path.cwd())
+    branch = current_branch_name(repo)
+    if branch is not None:
+        print(f"On branch {branch}")
     sys.stdout.write(format_status(collect_status(repo)))
     return 0
 
@@ -244,6 +249,8 @@ def cmd_log(args: argparse.Namespace) -> int:
             print(f"{info.oid[:7]} {first_line}")
         else:
             print(f"commit {info.oid}")
+            if len(info.parents) > 1:
+                print("Merge: " + " ".join(parent[:7] for parent in info.parents))
             print(f"Author: {info.author}")
             print()
             for line in info.message.rstrip("\n").splitlines():
@@ -256,6 +263,14 @@ def cmd_branch(args: argparse.Namespace) -> int:
     """执行 branch 命令。"""
 
     repo = find_repository(Path.cwd())
+    if args.move is not None:
+        rename_branch(repo, args.move[0], args.move[1])
+        return 0
+    if args.set_upstream_to is not None:
+        if args.name is None:
+            raise PygitError("--set-upstream-to requires a branch name")
+        set_upstream(repo, args.name, args.set_upstream_to)
+        return 0
     if args.delete:
         if args.name is None:
             raise PygitError("branch -d requires a branch name")
@@ -276,7 +291,12 @@ def cmd_checkout(args: argparse.Namespace) -> int:
     """执行 checkout 命令。"""
 
     repo = find_repository(Path.cwd())
-    checkout_target(repo, args.target)
+    if args.items[0] == "--":
+        from .checkout import checkout_paths
+
+        checkout_paths(repo, args.items[1:])
+    else:
+        checkout_target(repo, args.items[0])
     return 0
 
 
@@ -284,6 +304,8 @@ def cmd_switch(args: argparse.Namespace) -> int:
     """执行 switch 命令。"""
 
     repo = find_repository(Path.cwd())
+    if args.create:
+        create_branch(repo, args.branch)
     switch_branch(repo, args.branch)
     return 0
 

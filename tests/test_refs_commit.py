@@ -66,7 +66,24 @@ class RefAndCommitTests(unittest.TestCase):
             commits = walk_first_parent(repo, second)
             self.assertEqual([commit.message for commit in commits], ["second\n", "first\n"])
 
+    def test_commit_uses_config_identity(self) -> None:
+        """commit author/committer 应能从 config 读取。"""
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            repo = init_repository(root)
+            repo.gitdir.joinpath("config").write_text(
+                "[core]\n\trepositoryformatversion = 0\n[user]\n\tname = Alice\n\temail = alice@example.com\n",
+                encoding="utf-8",
+            )
+            (root / "hello.txt").write_bytes(b"hello\n")
+            add_paths(repo, [Path("hello.txt")])
+
+            oid = commit_index(repo, "initial\n")
+            info = parse_commit(repo, oid)
+
+            self.assertIn("Alice <alice@example.com>", info.author)
+
 
 if __name__ == "__main__":
     unittest.main()
-

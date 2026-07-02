@@ -81,7 +81,21 @@ class StatusAndRmTests(unittest.TestCase):
             self.assertFalse(file_path.exists())
             self.assertEqual(read_index(repo), [])
 
+    def test_exclude_ignored_files_from_status_and_add(self) -> None:
+        """info/exclude 中的文件不应被 add 或 status 追踪。"""
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            repo = init_repository(root)
+            repo.gitdir.joinpath("info", "exclude").write_text("*.log\n", encoding="utf-8")
+            (root / "debug.log").write_bytes(b"ignore\n")
+
+            add_paths(repo, [Path(".")])
+            status = collect_status(repo)
+
+            self.assertEqual(read_index(repo), [])
+            self.assertEqual(status.untracked, [])
+
 
 if __name__ == "__main__":
     unittest.main()
-

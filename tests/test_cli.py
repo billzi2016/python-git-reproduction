@@ -110,6 +110,7 @@ class CliTests(unittest.TestCase):
 
             status_result = self.run_cli(root, "status")
             self.assertEqual(status_result.returncode, 0, status_result.stderr.decode())
+            self.assertIn(b"On branch main", status_result.stdout)
             self.assertIn(b"Changes to be committed", status_result.stdout)
             self.assertIn(b"hello.txt", status_result.stdout)
 
@@ -136,6 +137,14 @@ class CliTests(unittest.TestCase):
             self.assertIn(b"* main", list_result.stdout)
             self.assertIn(b"  dev", list_result.stdout)
 
+            move_result = self.run_cli(root, "branch", "-m", "dev", "feature")
+            self.assertEqual(move_result.returncode, 0, move_result.stderr.decode())
+            upstream_result = self.run_cli(root, "branch", "--set-upstream-to", "refs/remotes/origin/feature", "feature")
+            self.assertEqual(upstream_result.returncode, 0, upstream_result.stderr.decode())
+
+            switch_create = self.run_cli(root, "switch", "-c", "new-work")
+            self.assertEqual(switch_create.returncode, 0, switch_create.stderr.decode())
+
     def test_checkout_branch(self) -> None:
         """CLI 应能 checkout 到已有分支并重写工作区。"""
 
@@ -155,6 +164,11 @@ class CliTests(unittest.TestCase):
 
             checkout_result = self.run_cli(root, "checkout", "dev")
             self.assertEqual(checkout_result.returncode, 0, checkout_result.stderr.decode())
+            self.assertEqual(file_path.read_bytes(), b"main\n")
+
+            file_path.write_bytes(b"dirty\n")
+            checkout_file = self.run_cli(root, "checkout", "--", "hello.txt")
+            self.assertEqual(checkout_file.returncode, 0, checkout_file.stderr.decode())
             self.assertEqual(file_path.read_bytes(), b"main\n")
 
     def test_tag_and_reset_hard(self) -> None:

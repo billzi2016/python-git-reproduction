@@ -57,7 +57,7 @@ def encode_tag_object(repo: Repository, target_oid: str, name: str, message: str
     validate_oid(target_oid, allow_short=False)
     target = read_object(repo, target_oid)
     now = int(time.time())
-    identity = default_identity()
+    identity = default_identity(repo)
     tz = timezone_offset()
     normalized_message = message.rstrip("\n") + "\n"
     text = (
@@ -87,4 +87,3 @@ def validate_tag_name(name: str) -> None:
         raise TagError(f"invalid tag name: {name}")
     if name.startswith("refs/"):
         raise TagError("tag name must be short name, not refs path")
-

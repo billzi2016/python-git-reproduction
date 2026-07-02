@@ -73,6 +73,9 @@
 - merge 支持 LCA、快进、非快进自动合并、冲突标记和 index stage 1/2/3。
 - pack v2 与 idx v2 基础读写、idx 随机寻址、ref-delta 解析和非 delta pack 生成。
 - 本地路径远端 `clone`、`fetch`、`push` 和非快进 push 拒绝。
+- `info/exclude` 忽略规则。
+- 流式文件对象写入。
+- `checkout -- <path>`、`switch -c`、分支重命名、上游配置、config 作者信息。
 - 基于 Python 标准库 `unittest` 的测试目录。
 
 尚未实现：

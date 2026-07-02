@@ -13,7 +13,7 @@ import zlib
 from pathlib import Path
 
 from pygit.errors import ObjectError
-from pygit.objects import encode_object, object_id, read_object, resolve_oid, write_object
+from pygit.objects import encode_object, hash_file_object, object_id, read_object, resolve_oid, write_file_object, write_object
 from pygit.repository import init_repository
 
 
@@ -63,7 +63,20 @@ class ObjectTests(unittest.TestCase):
             with self.assertRaises(ObjectError):
                 read_object(repo, oid)
 
+    def test_streaming_file_hash_and_write(self) -> None:
+        """文件对象应能通过分块路径计算和写入。"""
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            repo = init_repository(root)
+            path = root / "large.bin"
+            path.write_bytes((b"0123456789abcdef" * 8192) + b"\n")
+
+            oid = write_file_object(repo, path)
+
+            self.assertEqual(hash_file_object(path), oid)
+            self.assertEqual(read_object(repo, oid).content, path.read_bytes())
+
 
 if __name__ == "__main__":
     unittest.main()
-

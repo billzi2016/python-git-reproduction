@@ -70,7 +70,29 @@ class StashTests(unittest.TestCase):
             self.assertEqual(path.read_bytes(), b"two\n")
             self.assertEqual(read_stash_stack(repo), [])
 
+    def test_stash_apply_uses_three_way_and_conflicts(self) -> None:
+        """当前 HEAD 和 stash 同改一路径时应产生冲突标记。"""
+
+        from pygit.merge import MergeConflict
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            repo = init_repository(root)
+            path = root / "hello.txt"
+            path.write_bytes(b"base\n")
+            add_paths(repo, [Path("hello.txt")])
+            commit_index(repo, "base\n")
+            path.write_bytes(b"stash\n")
+            stash_push(repo, "stash change")
+            path.write_bytes(b"head\n")
+            add_paths(repo, [Path("hello.txt")])
+            commit_index(repo, "head change\n")
+
+            with self.assertRaises(MergeConflict):
+                stash_apply(repo)
+
+            self.assertIn("<<<<<<< HEAD", path.read_text(encoding="utf-8"))
+
 
 if __name__ == "__main__":
     unittest.main()
-
