@@ -15,8 +15,10 @@ from .commit import commit_index, create_commit, parse_commit, walk_first_parent
 from .errors import PygitError
 from .objects import object_id, read_object, write_object
 from .refs import create_branch, current_branch_name, current_commit, delete_branch, list_branches, update_ref
+from .reset import reset
 from .repository import find_repository, init_repository
 from .status import collect_status, format_status
+from .tag import create_annotated_tag, create_lightweight_tag, list_tags
 from .working_tree import add_paths, build_tree_from_index, format_tree_pretty, remove_paths
 
 
@@ -76,6 +78,19 @@ def build_parser() -> argparse.ArgumentParser:
 
     switch = subparsers.add_parser("switch", help="切换到本地分支")
     switch.add_argument("branch", help="分支名")
+
+    tag = subparsers.add_parser("tag", help="列出或创建标签")
+    tag.add_argument("-a", "--annotate", action="store_true", help="创建附注标签")
+    tag.add_argument("-m", "--message", help="附注标签说明")
+    tag.add_argument("name", nargs="?", help="标签名")
+    tag.add_argument("target", nargs="?", help="目标 commit，默认 HEAD")
+
+    reset_parser = subparsers.add_parser("reset", help="重置当前 HEAD")
+    reset_mode = reset_parser.add_mutually_exclusive_group()
+    reset_mode.add_argument("--soft", action="store_true", help="只移动 HEAD")
+    reset_mode.add_argument("--mixed", action="store_true", help="移动 HEAD 并刷新 index")
+    reset_mode.add_argument("--hard", action="store_true", help="移动 HEAD、刷新 index 并重写工作区")
+    reset_parser.add_argument("target", help="目标 commit 或分支名")
 
     return parser
 
@@ -235,6 +250,40 @@ def cmd_switch(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_tag(args: argparse.Namespace) -> int:
+    """执行 tag 命令。"""
+
+    repo = find_repository(Path.cwd())
+    if args.name is None:
+        for name in list_tags(repo):
+            print(name)
+        return 0
+
+    target = args.target or current_commit(repo)
+    if target is None:
+        raise PygitError("cannot tag without commits")
+    if args.annotate:
+        if args.message is None:
+            raise PygitError("annotated tag requires -m")
+        create_annotated_tag(repo, args.name, target, args.message)
+    else:
+        create_lightweight_tag(repo, args.name, target)
+    return 0
+
+
+def cmd_reset(args: argparse.Namespace) -> int:
+    """执行 reset 命令。"""
+
+    repo = find_repository(Path.cwd())
+    mode = "--mixed"
+    if args.soft:
+        mode = "--soft"
+    elif args.hard:
+        mode = "--hard"
+    reset(repo, args.target, mode)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     """命令行主函数，返回进程退出码。"""
 
@@ -269,6 +318,10 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_checkout(args)
         if args.command == "switch":
             return cmd_switch(args)
+        if args.command == "tag":
+            return cmd_tag(args)
+        if args.command == "reset":
+            return cmd_reset(args)
     except PygitError as exc:
         print(f"fatal: {exc}", file=sys.stderr)
         return 1

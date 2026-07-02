@@ -43,6 +43,12 @@
 - `pygit branch -d <name>`
 - `pygit checkout <branch-or-commit>`
 - `pygit switch <branch>`
+- `pygit tag`
+- `pygit tag <name>`
+- `pygit tag -a <name> -m <message>`
+- `pygit reset --soft <target>`
+- `pygit reset --mixed <target>`
+- `pygit reset --hard <target>`
 - `.pygit` 基础目录初始化。
 - loose object 编码、SHA-1 计算、zlib 压缩写入。
 - loose object 解压、header 解析、size 校验、SHA-1 反校验。
@@ -54,11 +60,14 @@
 - 已追踪文件从 index 移除和安全工作区删除。
 - 本地分支创建、列出和删除。
 - 干净工作区下切换分支或游离 HEAD，并重写工作区与 index。
+- 轻量标签和附注标签。
+- soft、mixed、hard reset。
+- reset 目标支持分支名、commit SHA-1、轻量标签和附注标签。
 - 基于 Python 标准库 `unittest` 的测试目录。
 
 尚未实现：
 
-- reset、merge、stash。
+- merge、stash。
 - packfile、fetch、push、clone。
 
 ## 快速使用
@@ -131,6 +140,8 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - `branch` 创建、列出和删除。
 - `checkout` 分支或 commit。
 - `switch` 本地分支。
+- `tag` 轻量标签和附注标签。
+- `reset` soft、mixed、hard。
 - CLI `init/hash-object/cat-file/add/write-tree/commit/log` 基础链路。
 
 后续每个核心模块都必须补充对应测试：
@@ -173,8 +184,11 @@ python-git-reproduction/
 │   ├── objects.py
 │   ├── paths.py
 │   ├── refs.py
+│   ├── reset.py
 │   ├── repository.py
+│   ├── revision.py
 │   ├── status.py
+│   ├── tag.py
 │   └── working_tree.py
 ├── tests/
 │   ├── test_cli.py
@@ -184,7 +198,9 @@ python-git-reproduction/
 │   ├── test_objects.py
 │   ├── test_refs_commit.py
 │   ├── test_repository.py
+│   ├── test_reset.py
 │   ├── test_status_rm.py
+│   ├── test_tag.py
 │   └── test_working_tree.py
 ├── pyproject.toml
 └── README.md
@@ -363,7 +379,7 @@ Python 源码必须有充分中文注释：
 
 ## 当前限制
 
-当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status`、`rm`、`branch`、`checkout` 与 `switch` 能力。它还没有实现 reset、merge、stash、packfile 和远端同步。
+当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status`、`rm`、`branch`、`checkout`、`switch`、`tag` 与 `reset` 能力。它还没有实现 merge、stash、packfile 和远端同步。
 
 现阶段 `.pygit` 是项目自己的仓库目录，不能直接替代 `.git`。后续会逐步提高与官方 Git 的格式兼容性，并通过测试验证生成数据是否能被官方 Git 工具识别。
 

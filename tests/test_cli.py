@@ -154,6 +154,33 @@ class CliTests(unittest.TestCase):
             self.assertEqual(checkout_result.returncode, 0, checkout_result.stderr.decode())
             self.assertEqual(file_path.read_bytes(), b"main\n")
 
+    def test_tag_and_reset_hard(self) -> None:
+        """CLI 应能创建标签并执行 hard reset。"""
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            file_path = root / "hello.txt"
+            file_path.write_bytes(b"one\n")
+
+            self.assertEqual(self.run_cli(root, "init").returncode, 0)
+            self.assertEqual(self.run_cli(root, "add", "hello.txt").returncode, 0)
+            self.assertEqual(self.run_cli(root, "commit", "-m", "one").returncode, 0)
+
+            tag_result = self.run_cli(root, "tag", "v1")
+            self.assertEqual(tag_result.returncode, 0, tag_result.stderr.decode())
+
+            file_path.write_bytes(b"two\n")
+            self.assertEqual(self.run_cli(root, "add", "hello.txt").returncode, 0)
+            self.assertEqual(self.run_cli(root, "commit", "-m", "two").returncode, 0)
+
+            reset_result = self.run_cli(root, "reset", "--hard", "v1")
+            self.assertEqual(reset_result.returncode, 0, reset_result.stderr.decode())
+            self.assertEqual(file_path.read_bytes(), b"one\n")
+
+            tag_result = self.run_cli(root, "tag")
+            self.assertEqual(tag_result.returncode, 0, tag_result.stderr.decode())
+            self.assertIn(b"v1", tag_result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

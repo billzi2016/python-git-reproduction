@@ -94,6 +94,11 @@
 - [x] 支持符号引用 HEAD。
 - [x] 支持游离 HEAD。
 - [x] 原子更新 refs。
+- [x] 支持轻量标签引用。
+- [x] 支持附注标签对象引用。
+- [x] 修订名解析支持分支名。
+- [x] 修订名解析支持轻量标签。
+- [x] 修订名解析支持附注标签剥离到 commit。
 - [x] `branch` 列出本地分支。
 - [x] `branch <name>` 创建本地分支。
 - [x] `branch -d <name>` 删除非当前分支。
@@ -137,10 +142,13 @@
 
 ## 10. 尚未实现的瓷器命令
 
-- [ ] `tag`
-- [ ] `reset --soft`
-- [ ] `reset --mixed`
-- [ ] `reset --hard`
+- [x] `tag` 列出标签。
+- [x] `tag <name>` 创建轻量标签。
+- [x] `tag -a <name> -m <message>` 创建附注标签。
+- [x] `reset --soft`
+- [x] `reset --mixed`
+- [x] `reset --hard`
+- [x] `reset --hard` 保留未追踪文件，避免误删用户数据。
 - [ ] `stash push`
 - [ ] `stash apply`
 - [ ] `stash pop`
@@ -178,9 +186,8 @@
 - [x] `tests/test_status_rm.py`
 - [x] `tests/test_branch.py`
 - [x] `tests/test_checkout.py`
-- [ ] `tests/test_reset.py`
-- [ ] `tests/test_tag.py`
+- [x] `tests/test_reset.py`
+- [x] `tests/test_tag.py`
 - [ ] `tests/test_merge.py`
 - [ ] `tests/test_pack.py`
 - [ ] `tests/test_remote.py`
-
