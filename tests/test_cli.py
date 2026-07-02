@@ -133,6 +133,27 @@ class CliTests(unittest.TestCase):
             self.assertIn(b"* main", list_result.stdout)
             self.assertIn(b"  dev", list_result.stdout)
 
+    def test_checkout_branch(self) -> None:
+        """CLI 应能 checkout 到已有分支并重写工作区。"""
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            file_path = root / "hello.txt"
+            file_path.write_bytes(b"main\n")
+
+            self.assertEqual(self.run_cli(root, "init").returncode, 0)
+            self.assertEqual(self.run_cli(root, "add", "hello.txt").returncode, 0)
+            self.assertEqual(self.run_cli(root, "commit", "-m", "main").returncode, 0)
+            self.assertEqual(self.run_cli(root, "branch", "dev").returncode, 0)
+
+            file_path.write_bytes(b"main second\n")
+            self.assertEqual(self.run_cli(root, "add", "hello.txt").returncode, 0)
+            self.assertEqual(self.run_cli(root, "commit", "-m", "main second").returncode, 0)
+
+            checkout_result = self.run_cli(root, "checkout", "dev")
+            self.assertEqual(checkout_result.returncode, 0, checkout_result.stderr.decode())
+            self.assertEqual(file_path.read_bytes(), b"main\n")
+
 
 if __name__ == "__main__":
     unittest.main()

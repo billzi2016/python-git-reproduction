@@ -15,6 +15,7 @@
 9. `prd/08-non-functional.md`：性能、锁、校验、异常处理。
 10. `prd/09-roadmap.md`：分阶段实现路线。
 11. `PROJECT_TREE.md`：推荐代码目录结构与模块职责。
+12. `TASKS.md`：开发任务清单与完成状态。
 
 ## 全局实现原则
 

@@ -111,6 +111,25 @@ def update_head_target(repo: Repository, new_oid: str) -> None:
         update_ref(repo, ref_name, new_oid)
 
 
+def set_head_ref(repo: Repository, ref_name: str) -> None:
+    """把 HEAD 切换为符号引用。
+
+    该函数只改写 HEAD 文件，不改写工作区。checkout 必须在工作区和 index
+    刷新成功后再调用它，避免 HEAD 已变但文件未切换的半完成状态。
+    """
+
+    if not ref_name.startswith("refs/heads/"):
+        raise RefError(f"HEAD can only switch to branch refs: {ref_name}")
+    write_file_atomically(repo.head_path, f"ref: {ref_name}\n".encode("utf-8"))
+
+
+def set_detached_head(repo: Repository, oid: str) -> None:
+    """把 HEAD 设置为游离状态的 commit SHA-1。"""
+
+    validate_oid(oid, allow_short=False)
+    write_file_atomically(repo.head_path, f"{oid}\n".encode("ascii"))
+
+
 def current_branch_name(repo: Repository) -> str | None:
     """返回当前分支短名称，游离 HEAD 返回 None。"""
 

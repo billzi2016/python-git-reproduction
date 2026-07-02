@@ -10,6 +10,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from .checkout import checkout_target, switch_branch
 from .commit import commit_index, create_commit, parse_commit, walk_first_parent
 from .errors import PygitError
 from .objects import object_id, read_object, write_object
@@ -69,6 +70,12 @@ def build_parser() -> argparse.ArgumentParser:
     branch = subparsers.add_parser("branch", help="列出、创建或删除本地分支")
     branch.add_argument("-d", "--delete", action="store_true", help="删除分支")
     branch.add_argument("name", nargs="?", help="分支名")
+
+    checkout = subparsers.add_parser("checkout", help="切换到分支或 commit")
+    checkout.add_argument("target", help="分支名或 commit SHA-1")
+
+    switch = subparsers.add_parser("switch", help="切换到本地分支")
+    switch.add_argument("branch", help="分支名")
 
     return parser
 
@@ -212,6 +219,22 @@ def cmd_branch(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_checkout(args: argparse.Namespace) -> int:
+    """执行 checkout 命令。"""
+
+    repo = find_repository(Path.cwd())
+    checkout_target(repo, args.target)
+    return 0
+
+
+def cmd_switch(args: argparse.Namespace) -> int:
+    """执行 switch 命令。"""
+
+    repo = find_repository(Path.cwd())
+    switch_branch(repo, args.branch)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     """命令行主函数，返回进程退出码。"""
 
@@ -242,6 +265,10 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_log(args)
         if args.command == "branch":
             return cmd_branch(args)
+        if args.command == "checkout":
+            return cmd_checkout(args)
+        if args.command == "switch":
+            return cmd_switch(args)
     except PygitError as exc:
         print(f"fatal: {exc}", file=sys.stderr)
         return 1

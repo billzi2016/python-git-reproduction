@@ -41,6 +41,8 @@
 - `pygit branch`
 - `pygit branch <name>`
 - `pygit branch -d <name>`
+- `pygit checkout <branch-or-commit>`
+- `pygit switch <branch>`
 - `.pygit` 基础目录初始化。
 - loose object 编码、SHA-1 计算、zlib 压缩写入。
 - loose object 解压、header 解析、size 校验、SHA-1 反校验。
@@ -51,11 +53,12 @@
 - HEAD、index、工作区三方状态比较。
 - 已追踪文件从 index 移除和安全工作区删除。
 - 本地分支创建、列出和删除。
+- 干净工作区下切换分支或游离 HEAD，并重写工作区与 index。
 - 基于 Python 标准库 `unittest` 的测试目录。
 
 尚未实现：
 
-- checkout、reset、merge、stash。
+- reset、merge、stash。
 - packfile、fetch、push、clone。
 
 ## 快速使用
@@ -126,6 +129,8 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - `status` 三方状态比较。
 - `rm` 和 `rm --cached`。
 - `branch` 创建、列出和删除。
+- `checkout` 分支或 commit。
+- `switch` 本地分支。
 - CLI `init/hash-object/cat-file/add/write-tree/commit/log` 基础链路。
 
 后续每个核心模块都必须补充对应测试：
@@ -138,6 +143,16 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - `tests/test_pack.py`
 - `tests/test_remote.py`
 
+## 项目文档
+
+核心文档入口：
+
+- `docs/README.md`：文档阅读顺序。
+- `docs/SDD_REQUIREMENTS.md`：SDD 工程要求、测试要求、危险指令安全要求、SOLID/DRY 和提交质量要求。
+- `docs/TASKS.md`：开发任务清单，已完成任务使用 `[x]` 标记。
+- `docs/PROJECT_TREE.md`：推荐代码目录结构与模块职责。
+- `docs/prd/`：拆分后的产品需求文档。
+
 ## 项目结构
 
 ```text
@@ -149,6 +164,7 @@ python-git-reproduction/
 │   └── prd/
 ├── pygit/
 │   ├── __init__.py
+│   ├── checkout.py
 │   ├── cli.py
 │   ├── commit.py
 │   ├── errors.py
@@ -163,6 +179,7 @@ python-git-reproduction/
 ├── tests/
 │   ├── test_cli.py
 │   ├── test_branch.py
+│   ├── test_checkout.py
 │   ├── test_index.py
 │   ├── test_objects.py
 │   ├── test_refs_commit.py
@@ -346,7 +363,7 @@ Python 源码必须有充分中文注释：
 
 ## 当前限制
 
-当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status`、`rm` 与 `branch` 能力。它还没有实现 checkout、reset、merge、stash、packfile 和远端同步。
+当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status`、`rm`、`branch`、`checkout` 与 `switch` 能力。它还没有实现 reset、merge、stash、packfile 和远端同步。
 
 现阶段 `.pygit` 是项目自己的仓库目录，不能直接替代 `.git`。后续会逐步提高与官方 Git 的格式兼容性，并通过测试验证生成数据是否能被官方 Git 工具识别。
 
