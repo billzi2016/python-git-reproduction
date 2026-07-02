@@ -46,9 +46,47 @@ docs/
 
 `SDD_REQUIREMENTS.md` 说明规格、设计、开发、测试同步推进的工程要求，并强调危险命令必须保护用户电脑。
 
-`TASKS.md` 跟踪当前实现进度，是后续继续开发时最直接的任务清单。
+`TASKS.md` 跟踪当前实现进度。当前任务清单已经全部完成，没有未勾选任务项。
 
 `prd/` 目录保存拆分后的产品需求文档。每个文件只负责一个主题，避免单个巨型 PRD 难以维护。
+
+## 当前实现边界
+
+当前项目已经实现本地 `.pygit` 使用、本地路径远端同步和自建 `.pygit` 专用 TCP 服务器。
+
+已完成能力包括：
+
+- 本地提交闭环：`init`、`add`、`commit`、`log`、`status`。
+- 管道命令：`hash-object`、`cat-file`、`write-tree`、`read-tree`、`commit-tree`、`update-ref`。
+- 本地工作流：`rm`、`branch`、`checkout`、`switch`、`tag`、`reset`、`stash`、`merge`。
+- 对象数据库：loose object、tree、commit、tag、pack v2、idx v2、ref-delta 读取。
+- 远端同步：本地路径 `clone/fetch/push`，以及 `pygit://host:port` 专用服务器 `clone/fetch/push`。
+- 安全边界：非快进 push 拒绝、危险工作区操作路径检查、未追踪文件保护。
+- 测试：62 个 `unittest` 用例，全部使用真实临时目录、真实 `.pygit`、真实对象库、真实 index 和真实工作区文件。
+
+明确不实现：
+
+- GitHub、SSH Git、HTTP Git 和官方 Git wire protocol。
+- Git LFS。
+- 官方 `git daemon`。本项目实现的是 `.pygit` 专用服务端，即 pygit daemon。
+
+## 验证状态
+
+当前收工验证命令：
+
+```bash
+python3 -m unittest discover -s tests -p 'test_*.py'
+```
+
+当前结果：
+
+```text
+Ran 62 tests
+
+OK
+```
+
+项目要求测试不得使用模拟对象替代核心 Git 行为。当前全仓库没有 `mock`、`Mock`、`unittest.mock`、`MagicMock` 或 `patch(` 用法。
 
 ## 全局实现原则
 

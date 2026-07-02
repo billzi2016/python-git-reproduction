@@ -20,7 +20,9 @@
 
 ## 当前实现状态
 
-当前处于 MVP 第一阶段，已经实现：
+当前任务清单已经完成，项目支持本地 `.pygit` 使用、本地路径远端同步，以及自建 `.pygit` 专用 TCP 服务器。
+
+已实现命令：
 
 - `pygit init`
 - `pygit add`
@@ -54,35 +56,46 @@
 - `pygit stash apply`
 - `pygit stash pop`
 - `pygit merge <target>`
+- `pygit clone <remote> <target>`
+- `pygit fetch [remote]`
+- `pygit push [remote] [branch]`
+- `pygit serve [--host HOST] [--port PORT] [path]`
+
+已实现能力：
+
 - `.pygit` 基础目录初始化。
 - loose object 编码、SHA-1 计算、zlib 压缩写入。
 - loose object 解压、header 解析、size 校验、SHA-1 反校验。
 - 唯一短 SHA-1 解析。
+- 大文件 blob 的 64KB 分块 hash 和压缩写入。
 - Git Index V2 基础读写、排序、padding 和 checksum。
+- Index V2 扩展区跳过。
 - 从 index 递归生成 tree 对象。
 - 从 tree 重建 index。
 - 基于当前分支 HEAD 创建 commit 并沿第一父链查看历史。
+- 多父 merge commit 展示。
+- 从 `.pygit/config` 读取 author/committer。
 - HEAD、index、工作区三方状态比较。
 - 已追踪文件从 index 移除和安全工作区删除。
-- 本地分支创建、列出和删除。
+- 本地分支创建、列出、删除、重命名和上游配置。
 - 干净工作区下切换分支或游离 HEAD，并重写工作区与 index。
+- `checkout -- <path>` 从 HEAD 恢复路径。
+- `switch -c <branch>` 创建并切换分支。
 - 轻量标签和附注标签。
 - soft、mixed、hard reset。
 - reset 目标支持分支名、commit SHA-1、轻量标签和附注标签。
-- 基础 stash push/apply/pop。
+- stash push/apply/pop，并支持三方合并式应用。
 - merge 支持 LCA、快进、非快进自动合并、冲突标记和 index stage 1/2/3。
 - pack v2 与 idx v2 基础读写、idx 随机寻址、ref-delta 解析和非 delta pack 生成。
 - 本地路径远端 `clone`、`fetch`、`push` 和非快进 push 拒绝。
 - 自建 `.pygit` 专用 TCP 服务器和 `pygit://host:port` 远端。
 - `info/exclude` 忽略规则。
-- 流式文件对象写入。
-- `checkout -- <path>`、`switch -c`、分支重命名、上游配置、config 作者信息。
 - 基于 Python 标准库 `unittest` 的测试目录。
 
-尚未实现：
+明确不实现：
 
 - GitHub、SSH Git、HTTP Git 和官方 Git wire protocol。
-- packfile、fetch、push、clone。
+- Git LFS。
 
 ## 快速使用
 
@@ -123,6 +136,67 @@ python3 -m pygit.cli cat-file -p <object-id>
 pygit init
 ```
 
+### 本地提交闭环
+
+```bash
+python3 -m pygit.cli init
+echo "hello" > hello.txt
+python3 -m pygit.cli add hello.txt
+python3 -m pygit.cli commit -m "initial commit"
+python3 -m pygit.cli log --oneline
+python3 -m pygit.cli status
+```
+
+### 分支与切换
+
+```bash
+python3 -m pygit.cli branch dev
+python3 -m pygit.cli switch dev
+echo "change" > hello.txt
+python3 -m pygit.cli add hello.txt
+python3 -m pygit.cli commit -m "update hello"
+python3 -m pygit.cli switch main
+python3 -m pygit.cli merge dev
+```
+
+### 标签、reset 和 stash
+
+```bash
+python3 -m pygit.cli tag v1.0.0
+python3 -m pygit.cli tag -a v1.0.1 -m "release v1.0.1"
+python3 -m pygit.cli reset --hard v1.0.0
+python3 -m pygit.cli stash push -m "temporary work"
+python3 -m pygit.cli stash pop
+```
+
+### 本地路径远端
+
+```bash
+python3 -m pygit.cli clone /path/to/source-repo /path/to/clone
+cd /path/to/clone
+python3 -m pygit.cli fetch
+python3 -m pygit.cli push
+```
+
+### 自建 `.pygit` 专用服务器
+
+服务端：
+
+```bash
+python3 -m pygit.cli serve --host 127.0.0.1 --port 9419 /path/to/repo
+```
+
+客户端：
+
+```bash
+python3 -m pygit.cli clone pygit://127.0.0.1:9419 /path/to/clone
+cd /path/to/clone
+python3 -m pygit.cli fetch
+python3 -m pygit.cli push
+```
+
+`pygit://host:port` 是本项目自己的专用协议，不是官方 Git wire protocol。
+
 ## 测试
 
 项目测试统一放在根目录 `tests/` 下，并使用 Python 标准库 `unittest`。
@@ -135,40 +209,43 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 
 当前测试覆盖：
 
+- 62 个 `unittest` 用例。
 - 仓库初始化目录结构。
 - 仓库向上发现。
 - 重复初始化拒绝。
 - blob 对象 header 编码。
 - Git 对象 SHA-1 计算。
 - loose object 写入和读取。
+- 大文件流式 hash 和写入。
 - 短 SHA-1 解析。
 - 损坏对象拒绝。
 - Git Index V2 编解码、排序和 checksum。
+- Index V2 扩展区跳过。
 - `add` 写入 blob 并更新 index。
 - `write-tree` 生成递归 tree。
+- `read-tree` 从 tree 重建 index。
 - `commit-tree` 创建 commit 对象。
 - `commit` 更新 HEAD 当前分支。
 - `log --oneline` 查看提交历史。
+- config author/committer。
 - `status` 三方状态比较。
 - `rm` 和 `rm --cached`。
-- `branch` 创建、列出和删除。
+- ignore 规则。
+- `branch` 创建、列出、删除、重命名和上游配置。
 - `checkout` 分支或 commit。
+- `checkout -- <path>`。
 - `switch` 本地分支。
+- `switch -c`。
 - `tag` 轻量标签和附注标签。
 - `reset` soft、mixed、hard。
-- `stash` push、apply、pop。
+- `stash` push、apply、pop 和三方应用冲突。
 - `merge` LCA、快进、三方合并和冲突隔离。
-- CLI `init/hash-object/cat-file/add/write-tree/commit/log` 基础链路。
+- pack v2、idx v2、pack 随机寻址、ref-delta。
+- 本地路径远端 clone/fetch/push 和非快进拒绝。
+- 自建 `.pygit` 专用 TCP 服务器 clone/fetch/push。
+- CLI 主要工作流链路。
 
-后续每个核心模块都必须补充对应测试：
-
-- `tests/test_index.py`
-- `tests/test_refs.py`
-- `tests/test_plumbing.py`
-- `tests/test_porcelain.py`
-- `tests/test_merge.py`
-- `tests/test_pack.py`
-- `tests/test_remote.py`
+项目要求测试不使用模拟对象替代核心 Git 行为。当前全仓库没有 `mock`、`Mock`、`unittest.mock`、`MagicMock` 或 `patch(` 用法。
 
 ## 项目文档
 
@@ -188,6 +265,7 @@ python-git-reproduction/
 │   ├── README.md
 │   ├── PROJECT_TREE.md
 │   ├── SDD_REQUIREMENTS.md
+│   ├── TASKS.md
 │   └── prd/
 ├── pygit/
 │   ├── __init__.py
@@ -195,15 +273,19 @@ python-git-reproduction/
 │   ├── cli.py
 │   ├── commit.py
 │   ├── errors.py
+│   ├── ignore.py
 │   ├── index.py
 │   ├── lockfile.py
 │   ├── merge.py
 │   ├── objects.py
+│   ├── pack.py
 │   ├── paths.py
 │   ├── refs.py
+│   ├── remote.py
 │   ├── reset.py
 │   ├── repository.py
 │   ├── revision.py
+│   ├── server.py
 │   ├── status.py
 │   ├── stash.py
 │   ├── tag.py
@@ -215,9 +297,12 @@ python-git-reproduction/
 │   ├── test_index.py
 │   ├── test_merge.py
 │   ├── test_objects.py
+│   ├── test_pack.py
 │   ├── test_refs_commit.py
+│   ├── test_remote.py
 │   ├── test_repository.py
 │   ├── test_reset.py
+│   ├── test_server.py
 │   ├── test_stash.py
 │   ├── test_status_rm.py
 │   ├── test_tag.py
