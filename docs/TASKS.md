@@ -179,10 +179,10 @@
 - [x] pack 对象随机寻址。
 - [x] delta 对象解析。
 - [x] pack 生成。
-- [ ] `clone`
-- [ ] `fetch`
-- [ ] `push`
-- [ ] 非快进 push 拒绝。
+- [x] `clone`
+- [x] `fetch`
+- [x] `push`
+- [x] 非快进 push 拒绝。
 - [x] 明确不实现 Git LFS。
 
 ## 13. 测试
@@ -200,4 +200,4 @@
 - [x] `tests/test_tag.py`
 - [x] `tests/test_merge.py`
 - [x] `tests/test_pack.py`
-- [ ] `tests/test_remote.py`
+- [x] `tests/test_remote.py`

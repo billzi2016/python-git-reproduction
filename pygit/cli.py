@@ -16,6 +16,7 @@ from .errors import PygitError
 from .merge import merge
 from .objects import object_id, read_object, write_object
 from .refs import create_branch, current_branch_name, current_commit, delete_branch, list_branches, update_ref
+from .remote import clone, fetch, push
 from .reset import index_entries_from_tree, reset
 from .repository import find_repository, init_repository
 from .status import collect_status, format_status
@@ -107,6 +108,17 @@ def build_parser() -> argparse.ArgumentParser:
     merge_parser = subparsers.add_parser("merge", help="合并分支或 commit")
     merge_parser.add_argument("target", help="要合并的分支名、标签或 commit")
     merge_parser.add_argument("-m", "--message", help="自动合并提交说明")
+
+    clone_parser = subparsers.add_parser("clone", help="从本地路径远端克隆")
+    clone_parser.add_argument("remote", help="远端仓库路径")
+    clone_parser.add_argument("target", help="目标目录")
+
+    fetch_parser = subparsers.add_parser("fetch", help="从 origin 抓取")
+    fetch_parser.add_argument("remote", nargs="?", help="可选远端仓库路径")
+
+    push_parser = subparsers.add_parser("push", help="推送到 origin")
+    push_parser.add_argument("remote", nargs="?", help="可选远端仓库路径")
+    push_parser.add_argument("branch", nargs="?", help="可选分支名")
 
     return parser
 
@@ -337,6 +349,32 @@ def cmd_merge(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_clone(args: argparse.Namespace) -> int:
+    """执行 clone 命令。"""
+
+    clone(Path(args.remote), Path(args.target))
+    return 0
+
+
+def cmd_fetch(args: argparse.Namespace) -> int:
+    """执行 fetch 命令。"""
+
+    repo = find_repository(Path.cwd())
+    fetched = fetch(repo, Path(args.remote) if args.remote else None)
+    for branch, oid in fetched.items():
+        print(f"{oid} refs/remotes/origin/{branch}")
+    return 0
+
+
+def cmd_push(args: argparse.Namespace) -> int:
+    """执行 push 命令。"""
+
+    repo = find_repository(Path.cwd())
+    oid = push(repo, Path(args.remote) if args.remote else None, args.branch)
+    print(oid)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     """命令行主函数，返回进程退出码。"""
 
@@ -381,6 +419,12 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_stash(args)
         if args.command == "merge":
             return cmd_merge(args)
+        if args.command == "clone":
+            return cmd_clone(args)
+        if args.command == "fetch":
+            return cmd_fetch(args)
+        if args.command == "push":
+            return cmd_push(args)
     except PygitError as exc:
         print(f"fatal: {exc}", file=sys.stderr)
         return 1

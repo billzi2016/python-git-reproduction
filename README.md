@@ -72,11 +72,12 @@
 - 基础 stash push/apply/pop。
 - merge 支持 LCA、快进、非快进自动合并、冲突标记和 index stage 1/2/3。
 - pack v2 与 idx v2 基础读写、idx 随机寻址、ref-delta 解析和非 delta pack 生成。
+- 本地路径远端 `clone`、`fetch`、`push` 和非快进 push 拒绝。
 - 基于 Python 标准库 `unittest` 的测试目录。
 
 尚未实现：
 
-- 远端同步。
+- HTTP/socket 远端协议。
 - packfile、fetch、push、clone。
 
 ## 快速使用
@@ -385,17 +386,17 @@ Python 源码必须有充分中文注释：
 
 ### V5：远端同步
 
-- `clone`
-- `fetch`
-- `push`
+- `clone`：已实现本地路径远端。
+- `fetch`：已实现本地路径远端。
+- `push`：已实现本地路径远端。
 - 远端引用协商。
 - want/have 对象协商。
-- 非快进拒绝。
-- pack 网络传输。
+- 非快进拒绝：已实现。
+- pack 网络传输：未实现 HTTP/socket 协议。
 
 ## 当前限制
 
-当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status`、`rm`、`branch`、`checkout`、`switch`、`tag`、`reset`、`stash`、`merge` 与 packfile 能力。它还没有实现远端同步。
+当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status`、`rm`、`branch`、`checkout`、`switch`、`tag`、`reset`、`stash`、`merge`、packfile 与本地路径远端同步能力。它还没有实现 HTTP/socket 远端协议。
 
 项目明确不实现 Git LFS。大文件后续只按普通 Git blob 和 packfile 路线优化，不引入 LFS pointer、LFS filter、LFS 对象目录或 LFS 远端协议。
 
