@@ -8,6 +8,8 @@
 
 现有根目录 `docs/` 保留为项目内部工程文档，包括 PRD、SDD、TASKS 和项目结构规划。新的 `docs-site/` 专门用于生成可发布的网站文档。
 
+文档站必须做成 **中英双语**，并且 **英文优先展示**。英文页面作为默认入口和默认导航内容，中文页面作为对应翻译或补充说明。这样项目对外展示时优先面向更广泛的开源读者，同时保留中文教学和中文工程说明。
+
 ## 2. 为什么选择 MkDocs Material
 
 项目当前文档主要是 Markdown，内容类型包括：
@@ -58,9 +60,103 @@ docs-site/
 ├── mkdocs.yml
 ├── mkdocs_prd.md
 └── docs/
+    ├── en/
+    │   ├── index.md
+    │   ├── getting-started.md
+    │   ├── user-guide/
+    │   ├── git-teaching/
+    │   ├── build-git-teaching/
+    │   ├── sdd-teaching/
+    │   ├── project/
+    │   └── prd/
+    └── zh/
+        ├── index.md
+        ├── getting-started.md
+        ├── user-guide/
+        ├── git-teaching/
+        ├── build-git-teaching/
+        ├── sdd-teaching/
+        ├── project/
+        └── prd/
+```
+
+当前已经创建的 `docs-site/docs/*.md` 单语言骨架可以作为英文内容的初稿，后续应迁移到 `docs-site/docs/en/`。中文内容放到 `docs-site/docs/zh/`，保持同名页面结构，方便读者在两种语言之间切换。
+
+英文优先的导航顺序：
+
+```text
+Home
+Getting Started
+User Guide
+Git Teaching
+Build Git Teaching
+SDD Teaching
+Project
+PRD
+中文
+```
+
+中文导航可以作为顶层 `中文` 分组，也可以后续使用 MkDocs Material 的语言切换机制。如果不引入复杂插件，优先使用顶层分组，确保部署简单稳定。
+
+英文目录建议：
+
+```text
+docs-site/docs/en/
+├── index.md
+├── getting-started.md
+├── user-guide/
+│   ├── index.md
+│   ├── local-workflow.md
+│   ├── pygit-server.md
+│   └── commands.md
+├── git-teaching/
+│   ├── index.md
+│   ├── git-object-model.md
+│   ├── index-and-staging.md
+│   ├── commits-and-dag.md
+│   ├── merge-conflict.md
+│   └── packfile.md
+├── build-git-teaching/
+│   ├── index.md
+│   ├── architecture.md
+│   ├── object-database.md
+│   ├── index-v2.md
+│   ├── refs.md
+│   ├── merge-engine.md
+│   └── pygit-daemon.md
+├── sdd-teaching/
+│   ├── index.md
+│   ├── what-is-sdd.md
+│   ├── prd-to-tasks.md
+│   ├── testing-strategy.md
+│   ├── dangerous-commands.md
+│   └── no-mock-policy.md
+├── project/
+│   ├── index.md
+│   ├── tasks.md
+│   ├── project-tree.md
+│   └── sdd-requirements.md
+└── prd/
     ├── index.md
-    ├── getting-started.md
-    ├── user-guide/
+    ├── 00-overview.md
+    ├── 01-repository-layout.md
+    ├── 02-object-database.md
+    ├── 03-index.md
+    ├── 04-plumbing-commands.md
+    ├── 05-porcelain-commands.md
+    ├── 06-merge.md
+    ├── 07-packfile-remote.md
+    ├── 08-non-functional.md
+    └── 09-roadmap.md
+```
+
+中文目录建议与英文目录保持一致：
+
+```text
+docs-site/docs/zh/
+├── index.md
+├── getting-started.md
+├── user-guide/
     │   ├── index.md
     │   ├── local-workflow.md
     │   ├── pygit-server.md
@@ -163,6 +259,16 @@ docs-site/
 
 暂时不要引入复杂插件，避免文档站启动成本过高。
 
+双语实现要求：
+
+- 默认站点入口必须是英文。
+- 英文页面路径使用 `en/`。
+- 中文页面路径使用 `zh/`。
+- 英文导航必须排在中文导航前面。
+- 每个中文页面应对应一个英文页面，文件名尽量一致。
+- 页面顶部可以手动加入语言跳转链接，例如 `中文版本` / `English version`。
+- 不要为了双语引入重型插件，除非 MkDocs Material 原生能力或简单导航已经不够。
+
 ## 7. 内容迁移策略
 
 不要直接移动根目录 `docs/`。
@@ -178,9 +284,12 @@ docs-site/
 
 ## 8. 后续任务
 
-- [ ] 创建 `docs-site/mkdocs.yml`。
-- [ ] 创建 `docs-site/docs/index.md`。
-- [ ] 创建 `docs-site/docs/getting-started.md`。
+- [x] 创建 `docs-site/mkdocs.yml`。
+- [x] 创建 `docs-site/docs/index.md`。
+- [x] 创建 `docs-site/docs/getting-started.md`。
+- [ ] 将当前单语言骨架迁移为 `docs-site/docs/en/` 英文默认内容。
+- [ ] 创建 `docs-site/docs/zh/` 中文内容骨架。
+- [ ] 更新 `mkdocs.yml` 导航为英文优先、中文在后。
 - [ ] 创建 `git-teaching/` 教学页面。
 - [ ] 创建 `build-git-teaching/` 实现教学页面。
 - [ ] 创建 `sdd-teaching/` SDD 教学页面。
@@ -188,4 +297,3 @@ docs-site/
 - [ ] 整理项目文档到 `docs-site/docs/project/`。
 - [ ] 本地运行 `mkdocs serve` 验证导航。
 - [ ] 后续可接 GitHub Pages，但不是当前必须项。
-
