@@ -38,6 +38,9 @@
 - `pygit status`
 - `pygit rm`
 - `pygit rm --cached`
+- `pygit branch`
+- `pygit branch <name>`
+- `pygit branch -d <name>`
 - `.pygit` 基础目录初始化。
 - loose object 编码、SHA-1 计算、zlib 压缩写入。
 - loose object 解压、header 解析、size 校验、SHA-1 反校验。
@@ -47,11 +50,12 @@
 - 基于当前分支 HEAD 创建 commit 并沿第一父链查看历史。
 - HEAD、index、工作区三方状态比较。
 - 已追踪文件从 index 移除和安全工作区删除。
+- 本地分支创建、列出和删除。
 - 基于 Python 标准库 `unittest` 的测试目录。
 
 尚未实现：
 
-- branch、checkout、reset、merge、stash。
+- checkout、reset、merge、stash。
 - packfile、fetch、push、clone。
 
 ## 快速使用
@@ -121,6 +125,7 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - `log --oneline` 查看提交历史。
 - `status` 三方状态比较。
 - `rm` 和 `rm --cached`。
+- `branch` 创建、列出和删除。
 - CLI `init/hash-object/cat-file/add/write-tree/commit/log` 基础链路。
 
 后续每个核心模块都必须补充对应测试：
@@ -157,6 +162,7 @@ python-git-reproduction/
 │   └── working_tree.py
 ├── tests/
 │   ├── test_cli.py
+│   ├── test_branch.py
 │   ├── test_index.py
 │   ├── test_objects.py
 │   ├── test_refs_commit.py
@@ -340,7 +346,7 @@ Python 源码必须有充分中文注释：
 
 ## 当前限制
 
-当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status` 与 `rm` 能力。它还没有实现 branch、checkout、reset、merge、stash、packfile 和远端同步。
+当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环，并具备基础 `status`、`rm` 与 `branch` 能力。它还没有实现 checkout、reset、merge、stash、packfile 和远端同步。
 
 现阶段 `.pygit` 是项目自己的仓库目录，不能直接替代 `.git`。后续会逐步提高与官方 Git 的格式兼容性，并通过测试验证生成数据是否能被官方 Git 工具识别。
 

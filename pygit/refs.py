@@ -110,3 +110,64 @@ def update_head_target(repo: Repository, new_oid: str) -> None:
     else:
         update_ref(repo, ref_name, new_oid)
 
+
+def current_branch_name(repo: Repository) -> str | None:
+    """返回当前分支短名称，游离 HEAD 返回 None。"""
+
+    ref_name, _ = read_head(repo)
+    if ref_name is None:
+        return None
+    prefix = "refs/heads/"
+    if not ref_name.startswith(prefix):
+        return None
+    return ref_name[len(prefix) :]
+
+
+def list_branches(repo: Repository) -> list[str]:
+    """列出本地分支短名称。"""
+
+    heads = repo.refs_dir / "heads"
+    if not heads.exists():
+        return []
+    branches: list[str] = []
+    for path in sorted(heads.rglob("*")):
+        if path.is_file():
+            branches.append(path.relative_to(heads).as_posix())
+    return branches
+
+
+def create_branch(repo: Repository, name: str) -> None:
+    """基于当前 HEAD commit 创建本地分支。"""
+
+    validate_branch_name(name)
+    oid = current_commit(repo)
+    if oid is None:
+        raise RefError("cannot create branch without commits")
+    target = f"refs/heads/{name}"
+    if ref_path(repo, target).exists():
+        raise RefError(f"branch already exists: {name}")
+    update_ref(repo, target, oid)
+
+
+def delete_branch(repo: Repository, name: str) -> None:
+    """删除本地分支引用文件。"""
+
+    validate_branch_name(name)
+    current = current_branch_name(repo)
+    if current == name:
+        raise RefError("cannot delete the current branch")
+    path = ref_path(repo, f"refs/heads/{name}")
+    if not path.exists():
+        raise RefError(f"branch not found: {name}")
+    path.unlink()
+
+
+def validate_branch_name(name: str) -> None:
+    """校验分支短名称，防止路径逃逸和明显非法引用。"""
+
+    if not name or name.startswith("/") or name.endswith("/") or "\\" in name:
+        raise RefError(f"invalid branch name: {name}")
+    if ".." in Path(name).parts or name in {".", ".."}:
+        raise RefError(f"invalid branch name: {name}")
+    if name.startswith("refs/"):
+        raise RefError("branch name must be short name, not refs path")

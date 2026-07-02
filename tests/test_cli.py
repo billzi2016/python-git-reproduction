@@ -114,6 +114,25 @@ class CliTests(unittest.TestCase):
             self.assertEqual(rm_result.returncode, 0, rm_result.stderr.decode())
             self.assertTrue((root / "hello.txt").exists())
 
+    def test_branch_create_and_list(self) -> None:
+        """CLI 应能创建并列出本地分支。"""
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "hello.txt").write_bytes(b"hello\n")
+
+            self.assertEqual(self.run_cli(root, "init").returncode, 0)
+            self.assertEqual(self.run_cli(root, "add", "hello.txt").returncode, 0)
+            self.assertEqual(self.run_cli(root, "commit", "-m", "initial").returncode, 0)
+
+            branch_result = self.run_cli(root, "branch", "dev")
+            self.assertEqual(branch_result.returncode, 0, branch_result.stderr.decode())
+
+            list_result = self.run_cli(root, "branch")
+            self.assertEqual(list_result.returncode, 0, list_result.stderr.decode())
+            self.assertIn(b"* main", list_result.stdout)
+            self.assertIn(b"  dev", list_result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

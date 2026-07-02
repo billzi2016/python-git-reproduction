@@ -13,7 +13,7 @@ from pathlib import Path
 from .commit import commit_index, create_commit, parse_commit, walk_first_parent
 from .errors import PygitError
 from .objects import object_id, read_object, write_object
-from .refs import current_commit, update_ref
+from .refs import create_branch, current_branch_name, current_commit, delete_branch, list_branches, update_ref
 from .repository import find_repository, init_repository
 from .status import collect_status, format_status
 from .working_tree import add_paths, build_tree_from_index, format_tree_pretty, remove_paths
@@ -65,6 +65,10 @@ def build_parser() -> argparse.ArgumentParser:
     log = subparsers.add_parser("log", help="显示提交历史")
     log.add_argument("-n", "--max-count", type=int, default=None, help="最多显示多少条")
     log.add_argument("--oneline", action="store_true", help="单行模式")
+
+    branch = subparsers.add_parser("branch", help="列出、创建或删除本地分支")
+    branch.add_argument("-d", "--delete", action="store_true", help="删除分支")
+    branch.add_argument("name", nargs="?", help="分支名")
 
     return parser
 
@@ -188,6 +192,26 @@ def cmd_log(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_branch(args: argparse.Namespace) -> int:
+    """执行 branch 命令。"""
+
+    repo = find_repository(Path.cwd())
+    if args.delete:
+        if args.name is None:
+            raise PygitError("branch -d requires a branch name")
+        delete_branch(repo, args.name)
+        return 0
+    if args.name is not None:
+        create_branch(repo, args.name)
+        return 0
+
+    current = current_branch_name(repo)
+    for branch in list_branches(repo):
+        marker = "*" if branch == current else " "
+        print(f"{marker} {branch}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     """命令行主函数，返回进程退出码。"""
 
@@ -216,6 +240,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_commit(args)
         if args.command == "log":
             return cmd_log(args)
+        if args.command == "branch":
+            return cmd_branch(args)
     except PygitError as exc:
         print(f"fatal: {exc}", file=sys.stderr)
         return 1
