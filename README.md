@@ -4,6 +4,14 @@
 
 When the project runs, it creates a `.pygit` directory in the workspace. The design goal of `.pygit` is to be as compatible as possible with official Git object formats, index formats, reference formats, and packfile formats.
 
+## Documentation Site
+
+Public documentation site:
+
+- https://billzi2016.github.io/python-git-reproduction/
+
+The site is English-first by default. Chinese pages are available from the top-level Chinese navigation group inside the site.
+
 ## Project Goals
 
 The final goal is to reproduce Git's complete core feature set with the Python standard library, including:

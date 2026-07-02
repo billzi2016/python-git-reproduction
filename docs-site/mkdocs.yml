@@ -63,6 +63,18 @@ nav:
       - Packfile and Remote: prd/07-packfile-remote.md
       - Non Functional: prd/08-non-functional.md
       - Roadmap: prd/09-roadmap.md
+  - 中文:
+      - 首页: zh/index.md
+      - 快速开始: zh/getting-started.md
+      - 项目:
+          - 总览: zh/project/index.md
+          - 任务清单: zh/project/tasks.md
+          - 项目结构: zh/project/project-tree.md
+          - SDD 工程要求: zh/project/sdd-requirements.md
+      - SDD 教学:
+          - 总览: zh/sdd-teaching/index.md
+      - PRD:
+          - 总览: zh/prd/index.md
 
 plugins:
   - search
