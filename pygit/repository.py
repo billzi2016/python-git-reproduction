@@ -40,6 +40,12 @@ class Repository:
 
         return self.gitdir / "HEAD"
 
+    @property
+    def index_path(self) -> Path:
+        """返回 Git Index V2 暂存区文件路径。"""
+
+        return self.gitdir / "index"
+
 
 def init_repository(path: Path) -> Repository:
     """在指定工作区初始化 `.pygit` 仓库。
@@ -94,4 +100,3 @@ def find_repository(start: Path) -> Repository:
         if gitdir.is_dir():
             return Repository(worktree=directory, gitdir=gitdir)
     raise RepositoryError("not a pygit repository")
-

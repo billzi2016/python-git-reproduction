@@ -23,22 +23,29 @@
 当前处于 MVP 第一阶段，已经实现：
 
 - `pygit init`
+- `pygit add`
 - `pygit hash-object`
 - `pygit hash-object -w`
 - `pygit cat-file -t`
 - `pygit cat-file -s`
 - `pygit cat-file -p`
+- `pygit write-tree`
+- `pygit commit-tree`
+- `pygit update-ref`
+- `pygit commit -m`
+- `pygit log`
+- `pygit log --oneline`
 - `.pygit` 基础目录初始化。
 - loose object 编码、SHA-1 计算、zlib 压缩写入。
 - loose object 解压、header 解析、size 校验、SHA-1 反校验。
 - 唯一短 SHA-1 解析。
+- Git Index V2 基础读写、排序、padding 和 checksum。
+- 从 index 递归生成 tree 对象。
+- 基于当前分支 HEAD 创建 commit 并沿第一父链查看历史。
 - 基于 Python 标准库 `unittest` 的测试目录。
 
 尚未实现：
 
-- Index V2 读写。
-- `add`、`write-tree`、`commit-tree`、`commit`、`log`。
-- refs 更新。
 - branch、checkout、reset、merge、stash。
 - packfile、fetch、push、clone。
 
@@ -101,7 +108,13 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 - loose object 写入和读取。
 - 短 SHA-1 解析。
 - 损坏对象拒绝。
-- CLI `init/hash-object/cat-file` 基础链路。
+- Git Index V2 编解码、排序和 checksum。
+- `add` 写入 blob 并更新 index。
+- `write-tree` 生成递归 tree。
+- `commit-tree` 创建 commit 对象。
+- `commit` 更新 HEAD 当前分支。
+- `log --oneline` 查看提交历史。
+- CLI `init/hash-object/cat-file/add/write-tree/commit/log` 基础链路。
 
 后续每个核心模块都必须补充对应测试：
 
@@ -125,15 +138,22 @@ python-git-reproduction/
 ├── pygit/
 │   ├── __init__.py
 │   ├── cli.py
+│   ├── commit.py
 │   ├── errors.py
+│   ├── index.py
 │   ├── lockfile.py
 │   ├── objects.py
 │   ├── paths.py
-│   └── repository.py
+│   ├── refs.py
+│   ├── repository.py
+│   └── working_tree.py
 ├── tests/
 │   ├── test_cli.py
+│   ├── test_index.py
 │   ├── test_objects.py
-│   └── test_repository.py
+│   ├── test_refs_commit.py
+│   ├── test_repository.py
+│   └── test_working_tree.py
 ├── pyproject.toml
 └── README.md
 ```
@@ -248,16 +268,17 @@ Python 源码必须有充分中文注释：
 
 ### MVP：对象库和本地提交闭环
 
-- `init`
-- `hash-object`
-- `cat-file`
-- loose object 读写和校验
-- Git Index V2 基础读写
-- `add`
-- `write-tree`
-- `commit-tree`
-- `commit`
-- `log`
+- `init`：已实现。
+- `hash-object`：已实现。
+- `cat-file`：已实现。
+- loose object 读写和校验：已实现。
+- Git Index V2 基础读写：已实现。
+- `add`：已实现。
+- `write-tree`：已实现。
+- `commit-tree`：已实现。
+- `update-ref`：已实现。
+- `commit`：已实现。
+- `log`：已实现。
 
 ### V1：本地工作流
 
@@ -308,7 +329,7 @@ Python 源码必须有充分中文注释：
 
 ## 当前限制
 
-当前版本只实现了 loose object MVP。它还不能进行真正的 Git 提交，也不能维护 index、refs、branch 或工作区状态。
+当前版本已经实现了从工作区文件到 blob、index、tree、commit、HEAD 更新和 log 的最小本地提交闭环。它还没有实现 branch、checkout、status、reset、merge、stash、packfile 和远端同步。
 
 现阶段 `.pygit` 是项目自己的仓库目录，不能直接替代 `.git`。后续会逐步提高与官方 Git 的格式兼容性，并通过测试验证生成数据是否能被官方 Git 工具识别。
 
@@ -319,4 +340,3 @@ Python 源码必须有充分中文注释：
 提交应保持主题集中。不要把无关格式化、功能变更和重构混在同一个 commit 中。
 
 涉及危险操作、安全边界、二进制格式、数据一致性或 Git 兼容性的改动，commit 信息必须写得更详细。
-
