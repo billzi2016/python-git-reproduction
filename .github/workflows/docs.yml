@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - "docs-site/**"
+      - "docs/**"
+      - "README.md"
+      - "README_CN.md"
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
@@ -51,4 +54,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
