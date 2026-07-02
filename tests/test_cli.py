@@ -184,6 +184,27 @@ class CliTests(unittest.TestCase):
             self.assertEqual(tag_result.returncode, 0, tag_result.stderr.decode())
             self.assertIn(b"v1", tag_result.stdout)
 
+    def test_stash_push_and_pop(self) -> None:
+        """CLI 应能 stash push 后再 pop 恢复修改。"""
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            file_path = root / "hello.txt"
+            file_path.write_bytes(b"one\n")
+
+            self.assertEqual(self.run_cli(root, "init").returncode, 0)
+            self.assertEqual(self.run_cli(root, "add", "hello.txt").returncode, 0)
+            self.assertEqual(self.run_cli(root, "commit", "-m", "one").returncode, 0)
+            file_path.write_bytes(b"two\n")
+
+            push_result = self.run_cli(root, "stash", "push", "-m", "change")
+            self.assertEqual(push_result.returncode, 0, push_result.stderr.decode())
+            self.assertEqual(file_path.read_bytes(), b"one\n")
+
+            pop_result = self.run_cli(root, "stash", "pop")
+            self.assertEqual(pop_result.returncode, 0, pop_result.stderr.decode())
+            self.assertEqual(file_path.read_bytes(), b"two\n")
+
 
 if __name__ == "__main__":
     unittest.main()

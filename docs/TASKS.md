@@ -149,9 +149,12 @@
 - [x] `reset --mixed`
 - [x] `reset --hard`
 - [x] `reset --hard` 保留未追踪文件，避免误删用户数据。
-- [ ] `stash push`
-- [ ] `stash apply`
-- [ ] `stash pop`
+- [x] `stash push`
+- [x] `stash apply`
+- [x] `stash pop`
+- [x] stash 栈写入 `.pygit/refs/stash`。
+- [x] stash push 后恢复到 HEAD。
+- [ ] stash apply/pop 三方合并式应用。
 
 ## 11. 合并
 

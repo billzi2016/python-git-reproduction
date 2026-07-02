@@ -18,6 +18,7 @@ from .refs import create_branch, current_branch_name, current_commit, delete_bra
 from .reset import index_entries_from_tree, reset
 from .repository import find_repository, init_repository
 from .status import collect_status, format_status
+from .stash import stash_apply, stash_pop, stash_push
 from .tag import create_annotated_tag, create_lightweight_tag, list_tags
 from .working_tree import add_paths, build_tree_from_index, format_tree_pretty, remove_paths
 
@@ -94,6 +95,13 @@ def build_parser() -> argparse.ArgumentParser:
     reset_mode.add_argument("--mixed", action="store_true", help="移动 HEAD 并刷新 index")
     reset_mode.add_argument("--hard", action="store_true", help="移动 HEAD、刷新 index 并重写工作区")
     reset_parser.add_argument("target", help="目标 commit 或分支名")
+
+    stash = subparsers.add_parser("stash", help="临时保存或恢复工作区状态")
+    stash_sub = stash.add_subparsers(dest="stash_command")
+    stash_push_parser = stash_sub.add_parser("push", help="保存当前工作区状态")
+    stash_push_parser.add_argument("-m", "--message", default="WIP", help="stash 说明")
+    stash_sub.add_parser("apply", help="应用栈顶 stash")
+    stash_sub.add_parser("pop", help="应用并移除栈顶 stash")
 
     return parser
 
@@ -297,6 +305,24 @@ def cmd_reset(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_stash(args: argparse.Namespace) -> int:
+    """执行 stash 命令。"""
+
+    repo = find_repository(Path.cwd())
+    command = args.stash_command or "push"
+    if command == "push":
+        oid = stash_push(repo, args.message)
+        print(f"Saved working directory and index state {oid[:7]}")
+        return 0
+    if command == "apply":
+        stash_apply(repo)
+        return 0
+    if command == "pop":
+        stash_pop(repo)
+        return 0
+    raise PygitError(f"unsupported stash command: {command}")
+
+
 def main(argv: list[str] | None = None) -> int:
     """命令行主函数，返回进程退出码。"""
 
@@ -337,6 +363,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_tag(args)
         if args.command == "reset":
             return cmd_reset(args)
+        if args.command == "stash":
+            return cmd_stash(args)
     except PygitError as exc:
         print(f"fatal: {exc}", file=sys.stderr)
         return 1

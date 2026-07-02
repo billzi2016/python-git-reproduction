@@ -82,7 +82,12 @@ def add_paths(repo: Repository, targets: list[Path]) -> list[IndexEntry]:
 def build_tree_from_index(repo: Repository) -> str:
     """从当前 index 生成根 tree 对象，并返回根 tree SHA-1。"""
 
-    entries = read_index(repo)
+    return build_tree_from_entries(repo, read_index(repo))
+
+
+def build_tree_from_entries(repo: Repository, entries: list[IndexEntry]) -> str:
+    """从给定 index 条目列表生成根 tree 对象。"""
+
     root = TreeNode()
     for entry in entries:
         if entry.stage != 0:
