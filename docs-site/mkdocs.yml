@@ -1,0 +1,76 @@
+site_name: python-git-reproduction
+site_description: A pure Python reproduction of Git core storage, workflows, packfiles, and a dedicated pygit server.
+site_url: https://billzi2016.github.io/python-git-reproduction/
+repo_url: https://github.com/billzi2016/python-git-reproduction
+repo_name: billzi2016/python-git-reproduction
+site_dir: site
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - User Guide:
+      - Overview: user-guide/index.md
+      - Local Workflow: user-guide/local-workflow.md
+      - Pygit Server: user-guide/pygit-server.md
+      - Commands: user-guide/commands.md
+  - Git Teaching:
+      - Overview: git-teaching/index.md
+      - Git Object Model: git-teaching/git-object-model.md
+      - Index and Staging: git-teaching/index-and-staging.md
+      - Commits and DAG: git-teaching/commits-and-dag.md
+      - Merge Conflict: git-teaching/merge-conflict.md
+      - Packfile: git-teaching/packfile.md
+  - Build Git Teaching:
+      - Overview: build-git-teaching/index.md
+      - Architecture: build-git-teaching/architecture.md
+      - Object Database: build-git-teaching/object-database.md
+      - Index V2: build-git-teaching/index-v2.md
+      - Refs: build-git-teaching/refs.md
+      - Merge Engine: build-git-teaching/merge-engine.md
+      - Pygit Daemon: build-git-teaching/pygit-daemon.md
+  - SDD Teaching:
+      - Overview: sdd-teaching/index.md
+      - What Is SDD: sdd-teaching/what-is-sdd.md
+      - PRD to Tasks: sdd-teaching/prd-to-tasks.md
+      - Testing Strategy: sdd-teaching/testing-strategy.md
+      - Dangerous Commands: sdd-teaching/dangerous-commands.md
+      - No Mock Policy: sdd-teaching/no-mock-policy.md
+  - Project:
+      - Overview: project/index.md
+      - Tasks: project/tasks.md
+      - Project Tree: project/project-tree.md
+      - SDD Requirements: project/sdd-requirements.md
+  - PRD:
+      - Overview: prd/index.md
+      - Project Overview: prd/00-overview.md
+      - Repository Layout: prd/01-repository-layout.md
+      - Object Database: prd/02-object-database.md
+      - Index: prd/03-index.md
+      - Plumbing Commands: prd/04-plumbing-commands.md
+      - Porcelain Commands: prd/05-porcelain-commands.md
+      - Merge: prd/06-merge.md
+      - Packfile and Remote: prd/07-packfile-remote.md
+      - Non Functional: prd/08-non-functional.md
+      - Roadmap: prd/09-roadmap.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - tables
+  - fenced_code
+  - codehilite
