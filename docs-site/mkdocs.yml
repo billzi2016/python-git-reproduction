@@ -124,10 +124,10 @@ plugins:
 extra:
   alternate:
     - name: English
-      link: /
+      link: /python-git-reproduction/
       lang: en
     - name: 中文
-      link: /zh/
+      link: /python-git-reproduction/zh/
       lang: zh
 
 markdown_extensions:
