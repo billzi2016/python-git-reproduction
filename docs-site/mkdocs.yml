@@ -103,6 +103,11 @@ plugins:
                 - SDD 工程要求: project/sdd-requirements.md
             - SDD 教学:
                 - 总览: sdd-teaching/index.md
+                - 什么是 SDD: sdd-teaching/what-is-sdd.md
+                - 从 PRD 到任务: sdd-teaching/prd-to-tasks.md
+                - 测试策略: sdd-teaching/testing-strategy.md
+                - 危险指令: sdd-teaching/dangerous-commands.md
+                - No Mock 策略: sdd-teaching/no-mock-policy.md
             - PRD:
                 - 总览: prd/index.md
                 - 项目概述: prd/00-overview.md

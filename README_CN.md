@@ -306,6 +306,44 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 
 ## 项目结构
 
+仓库当前采用分层的 Git 复现项目结构：
+
+```text
+python-git-reproduction/
+├── docs/                 # 内部工程文档、PRD、SDD、任务与结构规划
+├── docs-site/            # 公开 MkDocs 文档站源码
+├── pygit/                # 核心 Python 实现
+│   ├── cli.py            # CLI 入口
+│   ├── repository.py     # 仓库发现与仓库上下文
+│   ├── objects.py        # blob/tree/commit/tag 编码、存储与校验
+│   ├── index.py          # Git Index V2 二进制暂存区
+│   ├── refs.py           # HEAD、branch、tag、remote refs
+│   ├── lockfile.py       # 锁文件与原子写入
+│   ├── working_tree.py   # 工作区扫描与重写
+│   ├── diff.py           # 状态差异比较
+│   ├── merge.py          # LCA、快进、三方合并与冲突
+│   ├── pack.py           # pack / idx 解析与生成
+│   ├── remote.py         # 本地路径远端与 pygit 服务端同步
+│   └── commands/         # 管道命令与瓷器命令编排
+├── tests/                # 基于真实仓库状态的 unittest 测试
+├── LICENSE               # MIT 协议
+└── pyproject.toml        # 打包配置与命令入口
+```
+
+高层职责划分如下：
+
+- `pygit/objects.py`：负责对象 header、SHA-1、zlib 压缩、loose object 读写和完整性校验。
+- `pygit/index.py`：负责 Git Index V2 编解码、排序、stage 位、padding 和 checksum。
+- `pygit/refs.py`：负责符号 `HEAD`、游离 `HEAD`、branch、tag、remote refs 和原子更新。
+- `pygit/merge.py`：负责 DAG 遍历、最近公共祖先、快进判断、三方合并和冲突状态。
+- `pygit/pack.py`：负责 pack v2、idx v2、包内对象定位和 delta 相关行为。
+- `pygit/remote.py`：负责本地路径远端和 `.pygit` 专用服务端同步。
+- `tests/`：通过真实临时目录、真实对象库、真实 index 和真实工作区状态验证行为，而不是用 mock 替代核心 Git 语义。
+
+这个结构反映了项目的工程原则：模块职责清晰、危险逻辑集中复用、二进制格式逻辑可审计、安全边界统一管理。
+
+## 项目结构
+
 ```text
 python-git-reproduction/
 ├── docs/

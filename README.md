@@ -305,3 +305,39 @@ Core documentation entry points:
 - `docs/prd/`: the split product requirements documents.
 
 ## Project Structure
+
+The repository is organized around a layered Git reproduction architecture:
+
+```text
+python-git-reproduction/
+├── docs/                 # Internal engineering documents, PRD, SDD, tasks, and planning
+├── docs-site/            # Public MkDocs documentation site source
+├── pygit/                # Core Python implementation
+│   ├── cli.py            # CLI entry point
+│   ├── repository.py     # Repository discovery and repository context
+│   ├── objects.py        # Blob/tree/commit/tag encoding, storage, and validation
+│   ├── index.py          # Git Index V2 binary staging area
+│   ├── refs.py           # HEAD, branches, tags, and remote refs
+│   ├── lockfile.py       # Atomic write and lock-file handling
+│   ├── working_tree.py   # Working-tree scanning and rewrite behavior
+│   ├── diff.py           # State comparison helpers
+│   ├── merge.py          # LCA, fast-forward, three-way merge, and conflicts
+│   ├── pack.py           # Pack and idx parsing and generation
+│   ├── remote.py         # Local-path remotes and dedicated pygit server sync
+│   └── commands/         # Plumbing and porcelain command orchestration
+├── tests/                # Real unittest-based repository tests
+├── LICENSE               # MIT license
+└── pyproject.toml        # Packaging and command entry-point definition
+```
+
+High-level module responsibilities:
+
+- `pygit/objects.py`: manages Git object headers, SHA-1 object IDs, zlib compression, loose objects, and object integrity validation.
+- `pygit/index.py`: implements Git Index V2 encoding, decoding, sorting, stage bits, padding, and checksums.
+- `pygit/refs.py`: manages symbolic `HEAD`, detached `HEAD`, branch refs, tags, remote refs, and atomic ref updates.
+- `pygit/merge.py`: manages DAG traversal, lowest common ancestor discovery, fast-forward checks, three-way merge behavior, and conflict states.
+- `pygit/pack.py`: manages pack v2, idx v2, packed object lookup, and delta-related behavior.
+- `pygit/remote.py`: manages local-path remote workflows and the dedicated `.pygit` server protocol.
+- `tests/`: verifies repository behavior with real temporary repositories, real object files, real index files, and real working-tree state instead of mocks.
+
+This structure reflects the project's engineering rules: clear module responsibilities, centralized handling of dangerous logic, and reuse of binary-format and safety-critical behavior.

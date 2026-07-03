@@ -1,12 +1,21 @@
+# Python cache and bytecode
 __pycache__/
 *.py[cod]
 *.pyo
+
+# Test and coverage artifacts
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Build and packaging artifacts
 build/
 dist/
 *.egg-info/
+
+# Virtual environments
 .venv/
 venv/
 
+# Documentation site build output
+docs-site/site/
