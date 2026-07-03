@@ -38,6 +38,7 @@ plugins:
                 - Commands: user-guide/commands.md
             - Git Teaching:
                 - Overview: git-teaching/index.md
+                - Beginner Workflow: git-teaching/git-beginner-workflow.md
                 - Git Object Model: git-teaching/git-object-model.md
                 - Index and Staging: git-teaching/index-and-staging.md
                 - Commits and DAG: git-teaching/commits-and-dag.md
@@ -83,6 +84,7 @@ plugins:
             - 快速开始: getting-started.md
             - Git 教学:
                 - 总览: git-teaching/index.md
+                - 新手工作流: git-teaching/git-beginner-workflow.md
                 - Git 对象模型: git-teaching/git-object-model.md
                 - Index 与暂存区: git-teaching/index-and-staging.md
                 - Commit 与 DAG: git-teaching/commits-and-dag.md
